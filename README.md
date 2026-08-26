@@ -6,6 +6,8 @@
 
 Vertical slice **Demo_10min** jugable en Unity 6 (Boot → Heap → Kernel). Compila sin errores en **6000.5.9f1** tras alinear GUID de `SimpleBobAnim` y corregir builders de avatar.
 
+**Visión / roadmap:** el proyecto pivota hacia un **RPG de mundo abierto** (hub + biomas, quests, save local). El demo lineal se mantiene como referencia de combate y tutorial legacy. Ver [`docs/WORLD_RPG_PLAN.md`](docs/WORLD_RPG_PLAN.md) para alcance, fases y arquitectura planificada.
+
 ## Requisitos
 
 | Componente | Versión |
@@ -49,7 +51,7 @@ Recorrido lineal de tres zonas:
 - **Lenguaje:** C# (`NullBorn` namespace)
 - **Arte:** Primitivas URP + materiales temáticos (`Assets/Art/Materials/`)
 - **Persistencia (plan académico):** Unity → API → PostgreSQL (pendiente en este slice)
-- **Documentación:** [`CHANGELOG.md`](CHANGELOG.md), [`ARCHITECTURE.md`](ARCHITECTURE.md), [`docs/GDD_v1.md`](docs/GDD_v1.md), [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md)
+- **Documentación:** [`CHANGELOG.md`](CHANGELOG.md), [`ARCHITECTURE.md`](ARCHITECTURE.md), [`docs/WORLD_RPG_PLAN.md`](docs/WORLD_RPG_PLAN.md), [`docs/GDD_v1.md`](docs/GDD_v1.md), [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md)
 
 ## Escenas
 

@@ -21,6 +21,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/), y 
 - `SimpleBobAnim.cs` como script independiente.
 - `WorldZoneSign` para señalización 3D de zonas.
 - Documentación: `ARCHITECTURE.md`, `SECURITY.md`, `docs/REQUIREMENTS.md`.
+- Plan de pivot a **open world RPG**: [`docs/WORLD_RPG_PLAN.md`](docs/WORLD_RPG_PLAN.md) — hoja de ruta desde el vertical slice lineal (`Demo_10min`) hacia mundo abierto hub + biomas, quests, save local y arquitectura `World/` / `RPG/` / `Persistence/` (sin implementación de código aún).
 
 ## [0.2.0] — 2026-08-26
 

@@ -132,6 +132,21 @@ Entidades: Jugador, Sesion, Nivel, ProgresoSesion,
 
 Ver RF-17 a RF-20 y RNF-08 en [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md).
 
+## Roadmap — open world RPG (planificado)
+
+Pivot documentado en [`docs/WORLD_RPG_PLAN.md`](docs/WORLD_RPG_PLAN.md). **Sin implementación aún**; carpetas y escenas objetivo:
+
+| Carpeta / escena (futuro) | Responsabilidad planificada |
+|---|---|
+| `Scripts/World/` | Regiones, mapa, spawns ambientales (`RegionTrigger`, `WorldMapController`) |
+| `Scripts/RPG/` | Quests, diálogo, inventario, economía |
+| `Scripts/Persistence/` | Save/load local (`SaveData`, `LocalSaveProvider`) |
+| `Scripts/NPC/` | NPCs con rutinas y patrol |
+| `Assets/Data/` | ScriptableObjects (quests, NPCs, ítems, regiones) |
+| `World_Main.unity` | Overworld principal (reemplaza demo como escena principal en visión) |
+
+`Demo_10min` y el stack actual (`Bootstrap/`, `Core/`, `Demo/`) se mantienen como base reutilizable y tutorial embebido.
+
 ## Convenciones
 
 - Namespace raíz: `NullBorn.*`
