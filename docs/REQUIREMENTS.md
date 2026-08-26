@@ -2,7 +2,7 @@
 
 Resumen extraído de **Técnicas de Modelamiento de Software — Tablas RQF/RQNF** (UNIMINUTO Villavicencio, agosto 2026) y mapeo al estado actual del prototipo Unity.
 
-**Fuente:** `Tecnicas Modelamiento - RQF - RQNF.pptx`
+**Fuente:** Tablas RQF/RQNF del proyecto de grado (UNIMINUTO Villavicencio, agosto 2026). El documento original no se versiona en el repo; este archivo es la referencia canónica.
 
 **Alcance del documento académico:** Prototipo Action-RPG 3D para gamificar conceptos básicos de desarrollo de software mediante isomorfismo lúdico (Integridad = HP, CPU = stamina, enemigos = fugas, GC = cura). Arquitectura objetivo: **Unity → API → PostgreSQL OLTP**.
 
