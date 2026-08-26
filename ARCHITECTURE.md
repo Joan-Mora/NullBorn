@@ -1,6 +1,6 @@
 # Arquitectura — NullBorn
 
-Documento de arquitectura del vertical slice Unity. Complementa [`docs/GDD_v1.md`](docs/GDD_v1.md) y [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md).
+Documento de arquitectura del vertical slice Unity. La visión creativa y mecánica objetivo están en [`docs/GDD_v2.md`](docs/GDD_v2.md); [`docs/GDD_v1.md`](docs/GDD_v1.md) y **Demo_10min** documentan el slice legacy. Complementa [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md).
 
 ## Visión general
 
@@ -134,7 +134,19 @@ Ver RF-17 a RF-20 y RNF-08 en [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md).
 
 ## Roadmap — open world RPG (planificado)
 
-Pivot documentado en [`docs/WORLD_RPG_PLAN.md`](docs/WORLD_RPG_PLAN.md). **Sin implementación aún**; carpetas y escenas objetivo:
+Pivot documentado en [`docs/WORLD_RPG_PLAN.md`](docs/WORLD_RPG_PLAN.md) y alineado con [`docs/GDD_v2.md`](docs/GDD_v2.md). **Fase 0b (fundación de game feel)** es **bloqueante** antes de terreno open world: el PoC actual no cumple el estándar de combate legible; no ampliar a mundo abierto hasta completarla (criterio: 1 arena, 3 enemigos, 60 s de combate divertido).
+
+### Combate planificado (GDD v2 — sin implementación)
+
+| Sistema | Diseño objetivo |
+|---|---|
+| **Dash** | Esquiva con i-frames (12–18 frames), gasto de Energía, cancelable al final en ataque ligero |
+| **Lock-on** | Soft lock al target centrado; strafe; cámara acorta distancia |
+| **Combo (Corte de Traza)** | L-L-H con hitstop, trail visible, hitbox alineada a animación |
+| **Enemigo FSM** | `MemoryLeakEnemy` → Idle → Telegraph → Attack → Recover → (opcional) Enrage; sin drenaje pasivo global en adds |
+| **Habilidades** | Onda de Purga (AoE ofensivo, cooldown), Restaurar (curación canalizada) — evolución de GC/Debug Strike |
+
+**Sin implementación aún**; carpetas y escenas objetivo del open world:
 
 | Carpeta / escena (futuro) | Responsabilidad planificada |
 |---|---|

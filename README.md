@@ -1,12 +1,14 @@
 # NullBorn
 
-**NullBorn** es un prototipo Action-RPG 3D educativo (vertical slice) desarrollado en Unity 6 con URP. El jugador controla un **Thread** que debe estabilizar un sistema operativo corrupto mediante **Garbage Collection**, **depuración** y gestión de **ciclos de CPU**, usando **isomorfismo lúdico** para gamificar conceptos básicos de desarrollo de software.
+**NullBorn** es un **action-RPG ágil** en tercera persona (Unity 6 + URP) donde el jugador es un **Guardián de Runtime** que patrulla un ecosistema digital en colapso. **Combate legible primero:** cada acción debe verse, oírse y entenderse antes de ampliar el mundo. La informática es sabor y lore (isomorfismo lúdico), no el manual de instrucciones.
 
 ## Estado
 
-Vertical slice **Demo_10min** jugable en Unity 6 (Boot → Heap → Kernel). Compila sin errores en **6000.5.9f1** tras alinear GUID de `SimpleBobAnim` y corregir builders de avatar.
+Vertical slice **Demo_10min** jugable en Unity 6 (Boot → Heap → Kernel). Compila sin errores en **6000.5.9f1** tras alinear GUID de `SimpleBobAnim` y corregir builders de avatar. El demo es un **proof-of-concept pedagógico legacy** — no cumple aún el estándar de game feel del pivot.
 
-**Visión / roadmap:** el proyecto pivota hacia un **RPG de mundo abierto** (hub + biomas, quests, save local). El demo lineal se mantiene como referencia de combate y tutorial legacy. Ver [`docs/WORLD_RPG_PLAN.md`](docs/WORLD_RPG_PLAN.md) para alcance, fases y arquitectura planificada.
+**Diseño principal:** [`docs/GDD_v2.md`](docs/GDD_v2.md) (Guardián de Runtime, combate legible, Fase 0b).  
+**Roadmap open world:** [`docs/WORLD_RPG_PLAN.md`](docs/WORLD_RPG_PLAN.md) (hub + biomas, quests, save local).  
+**Legacy:** [`docs/GDD_v1.md`](docs/GDD_v1.md) y **Demo_10min** conservan el vertical slice lineal original como referencia.
 
 ## Requisitos
 
@@ -51,7 +53,7 @@ Recorrido lineal de tres zonas:
 - **Lenguaje:** C# (`NullBorn` namespace)
 - **Arte:** Primitivas URP + materiales temáticos (`Assets/Art/Materials/`)
 - **Persistencia (plan académico):** Unity → API → PostgreSQL (pendiente en este slice)
-- **Documentación:** [`CHANGELOG.md`](CHANGELOG.md), [`ARCHITECTURE.md`](ARCHITECTURE.md), [`docs/WORLD_RPG_PLAN.md`](docs/WORLD_RPG_PLAN.md), [`docs/GDD_v1.md`](docs/GDD_v1.md), [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md)
+- **Documentación:** [`docs/GDD_v2.md`](docs/GDD_v2.md) (diseño principal), [`CHANGELOG.md`](CHANGELOG.md), [`ARCHITECTURE.md`](ARCHITECTURE.md), [`docs/WORLD_RPG_PLAN.md`](docs/WORLD_RPG_PLAN.md), [`docs/GDD_v1.md`](docs/GDD_v1.md) (legacy), [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md)
 
 ## Escenas
 

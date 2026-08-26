@@ -22,6 +22,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/), y 
 - Documentación: `ARCHITECTURE.md`, `SECURITY.md`, `docs/REQUIREMENTS.md`.
 
 ### Changed
+- **`README.md`** y **`ARCHITECTURE.md`** — Sincronizados con GDD v2: identidad Guardián de Runtime, combate legible primero, Fase 0b bloqueante, sistemas de combate planificados en roadmap.
 - **`docs/WORLD_RPG_PLAN.md` v1.1** — Corregida afirmación falsa de “combate sólido”; inventario baseline honesto; **Fase 0b (fundación game feel)** como bloqueante antes del mundo abierto; alineado con GDD v2.
 - Requisitos RQF/RQNF movidos de `.pptx` a [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md); archivos `.pptx` eliminados del repo y añadidos a `.gitignore`.
 
