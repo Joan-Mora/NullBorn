@@ -14,14 +14,16 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/), y 
 - Barra de leak mostrando **LEAK BOSS** en Boot Sector antes de llegar al Kernel.
 - Carteles de zona y siluetas placeholder más legibles.
 
-### Changed
-- Requisitos RQF/RQNF movidos de `.pptx` a [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md); archivos `.pptx` eliminados del repo y añadidos a `.gitignore`.
-
 ### Added
+- **`docs/GDD_v2.md`** — Visión creativa reimaginada: Guardián del Runtime, combate legible (Corte de Traza, Onda de Purga, Restaurar), auditoría honesta del PoC, requisitos de animación, referencias Hades/Zelda/Souls-lite.
+- Plan de pivot a **open world RPG**: [`docs/WORLD_RPG_PLAN.md`](docs/WORLD_RPG_PLAN.md) — hoja de ruta hub + biomas, quests, save local y arquitectura `World/` / `RPG/` / `Persistence/`.
 - `SimpleBobAnim.cs` como script independiente.
 - `WorldZoneSign` para señalización 3D de zonas.
 - Documentación: `ARCHITECTURE.md`, `SECURITY.md`, `docs/REQUIREMENTS.md`.
-- Plan de pivot a **open world RPG**: [`docs/WORLD_RPG_PLAN.md`](docs/WORLD_RPG_PLAN.md) — hoja de ruta desde el vertical slice lineal (`Demo_10min`) hacia mundo abierto hub + biomas, quests, save local y arquitectura `World/` / `RPG/` / `Persistence/` (sin implementación de código aún).
+
+### Changed
+- **`docs/WORLD_RPG_PLAN.md` v1.1** — Corregida afirmación falsa de “combate sólido”; inventario baseline honesto; **Fase 0b (fundación game feel)** como bloqueante antes del mundo abierto; alineado con GDD v2.
+- Requisitos RQF/RQNF movidos de `.pptx` a [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md); archivos `.pptx` eliminados del repo y añadidos a `.gitignore`.
 
 ## [0.2.0] — 2026-08-26
 

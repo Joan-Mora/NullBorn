@@ -1,8 +1,8 @@
 # Plan de pivot — NullBorn Open World RPG
 
-**Versión:** 1.0  
+**Versión:** 1.1  
 **Fecha:** 2026-08-26  
-**Estado:** Planificación (sin implementación de código)  
+**Estado:** Planificación — visión alineada con [`GDD_v2.md`](GDD_v2.md)  
 **Proyecto:** NullBorn — Action-RPG educativo (Unity 6 + URP)  
 **Contexto académico:** UNIMINUTO Villavicencio — Técnicas de Modelamiento de Software
 
@@ -10,17 +10,20 @@
 
 ## Resumen ejecutivo
 
-NullBorn dispone hoy de un **vertical slice lineal** (`Demo_10min`: Boot → Heap → Kernel) con un loop de combate sólido basado en **isomorfismo lúdico** (Integridad, CPU, Memory Leaks, GC). El pivot abandona el demo de 10 minutos como visión principal y apunta a un **RPG de mundo abierto con sensación de vida**, manteniendo el ADN pedagógico.
+NullBorn dispone hoy de un **vertical slice lineal** (`Demo_10min`: Boot → Heap → Kernel) que demuestra **conceptos** de isomorfismo lúdico (Integridad, CPU, Memory Leaks, GC) enlazados en código — **no** un combate pulido ni divertido. Auditoría de código (2026-08-26): avatar estático (primitivas + bob), ataques por `OverlapSphere` sin animación/VFX, enemigos pasivos, GC como botón “hace todo”. Ver sección **A.0** y [`GDD_v2.md`](GDD_v2.md) §0.
 
-Este documento define visión, diseño de mundo, mecánicas, arquitectura técnica, fases de implementación y actualizaciones de documentación. **No sustituye** [`GDD_v1.md`](GDD_v1.md) hasta que se publique `GDD_v2`; sirve como hoja de ruta del pivot.
+El pivot apunta a un **RPG de mundo abierto con sensación de vida** y **combate legible estilo action-RPG**, con la informática como **sabor** (nombres, lore, codex) — no como jaula mecánica. **Fase 0b (fundación de game feel)** es prerrequisito obligatorio antes del terreno open world.
+
+Este documento define diseño de mundo, mecánicas, arquitectura técnica y fases. La visión creativa completa está en [`GDD_v2.md`](GDD_v2.md).
 
 ### Inventario del codebase actual (baseline)
 
 | Área | Existe | Detalle |
 |---|---|---|
-| Movimiento 3ª persona | ✅ | `ThirdPersonController`, `ThirdPersonCamera`, `CharacterController` |
+| Movimiento 3ª persona | 🟡 | `ThirdPersonController`, `ThirdPersonCamera` — sin sprint/dodge; **sin animación locomotion** |
+| Animación jugador | ❌ | `PlayerAnimBridge` en código; prefab sin Animator (solo `SimpleBobAnim`) |
 | Recursos core | ✅ | `SystemIntegrity` (HP), `CpuCycles` (stamina) |
-| Combate base | ✅ | `DebugStrikeAbility`, `GarbageCollectionAbility` |
+| Combate base | 🟡 **PoC crudo** | `DebugStrikeAbility`, `GarbageCollectionAbility` — lógica enlazada, **sin game feel** |
 | Enemigos | ✅ | `MemoryLeakEnemy` (Basic/Spawner/Boss + ENRAGE), `MemoryFragment` |
 | Sesión / estados | ✅ | `GameSession` (Playing/Victory/Defeat), pausa Esc |
 | Checkpoints | ✅ | `CheckpointSystem`, `Checkpoint` — respawn local con R |
@@ -49,13 +52,28 @@ Este documento define visión, diseño de mundo, mecánicas, arquitectura técni
 
 ## A. Visión
 
+### A.0 Estado real del combate (auditoría — no marketing)
+
+| Problema | Evidencia en código |
+|---|---|
+| Avatar estático | `Player_Thread`: primitivas; `SimpleBobAnim` (bob 5 cm); sin walk/attack |
+| Ataque invisible | `DebugStrikeAbility`: `OverlapSphere` instantáneo, log en consola si falla CPU |
+| GC confuso | `GarbageCollectionAbility`: daño + curación + limpieza en un input (E/G) |
+| Enemigo pasivo | `MemoryLeakEnemy`: drena HP global, crece escala, spawnea cubos; **sin ataques telegrafiados** |
+| Feedback mínimo | Solo `GcPulseVfx` en GC; sin hitstop, SFX impacto, camera shake |
+| HUD críptico | Barras “Integridad/CPU” + controles en una línea permanente |
+
+**Veredicto:** proof-of-concept pedagógico. **No** extender a open world hasta Fase 0b completada.
+
 ### A.1 De demo lineal a RPG de mundo abierto
 
 **Antes (ejemplo descartado como visión principal):** 3 zonas lineales, ~10 minutos, victoria al matar Leak Boss.
 
-**Ahora:** Un **mapa explorable continuo** donde el jugador (Thread) patrulla un ecosistema de procesos corruptos. El aprendizaje sigue siendo por **isomorfismo**, no por quizzes: cada mecánica nueva se introduce en contexto (POI, NPC o encuentro), no en un tutorial lineal obligatorio.
+**Ahora:** Un **mapa explorable continuo** donde el **Guardián de Runtime** patrulla una **Ciudad-Runtime** en colapso. Combate ágil y legible primero; aprendizaje por **acción + codex opcional**, no por jerga en el HUD.
 
-El mundo no es fantasy medieval: es el **interior estilizado de un sistema operativo bajo estrés** — circuitos, torres de stack, celdas RAM, nodos de red, estructuras que evocan infraestructura digital con lectura visual clara (siluetas, emisión URP, niebla por región).
+El mundo evoca **infraestructura digital estilizada** (torres stack, plazas boot, barrios heap) con lectura visual clara. La metáfora OS/computación vive en **lore, nombres de distrito e ítems** — ver [`GDD_v2.md`](GDD_v2.md) §2.
+
+**Identidad en una frase (v2):** *Action-RPG ágil donde purgas corrupciones en un ecosistema digital en colapso; la informática es sabor, no manual.*
 
 ### A.2 Definición de "mundo vivo"
 
@@ -153,7 +171,8 @@ Se recomienda **no** un mapa plano único ni un mundo gigante tipo AAA. La estru
 
 | # | Mecánica | Prioridad | Reutiliza NullBorn | Notas |
 |---|---|---|---|---|
-| 1 | **Combate extendido** | P0 | ✅ Debug Strike, GC, Leaks | Combo ligero, i-frames, tipos de bug nuevos |
+| 0b | **Fundación game feel** | **P0 bloqueante** | 🟡 PoC actual | Ver Fase 0b — **antes** de mundo abierto |
+| 1 | **Combate extendido** | P0 | 🟡 PoC crudo | Corte de Traza, Onda de Purga, Restaurar; lock-on; enemigos con FSM |
 | 2 | **Progresión / XP** | P0 | 🟡 Integridad como base | "Prioridad de Thread" (nivel); sube max CPU/Integridad |
 | 3 | **Quest system** | P0 | 🟡 TutorialDirector | ScriptableObjects + journal HUD |
 | 4 | **Save / load** | P0 | 🟡 CheckpointSystem | JSON local → API (RF-17) |
@@ -169,17 +188,20 @@ Se recomienda **no** un mapa plano único ni un mundo gigante tipo AAA. La estru
 
 ### C.2 Detalle por mecánica clave
 
-#### Combate (extensión)
+#### Combate (rediseño — ver GDD v2 §3)
 
-**Existente:** melee a corto alcance (OverlapSphere), GC en área, leaks con drain + fragmentos + boss ENRAGE.
+**Existente (PoC):** `OverlapSphere` sin feedback; GC ofensivo+defensivo mezclado; leaks pasivos.
 
-**Añadir:**
-- Lock-on opcional (Tab) hacia leak más cercano.
-- 2–3 enemigos nuevos como variantes pedagógicas:
-  - `NullReferenceBug` — teletransporte corto (referencia nula).
-  - `StackOverflowBrute` — lento, mucho daño de contacto.
-  - `RaceConditionTwin` — dos entidades sincronizadas.
-- Feedback: hit-stop breve, VFX por impacto, sonido placeholder.
+**Objetivo Fase 0b:**
+- **Corte de Traza** (combo L-L-H) — evolución de Debug Strike con animación y hitstop.
+- **Onda de Purga** (AoE ofensivo, cooldown) — parte ofensiva del antiguo GC.
+- **Restaurar** (curación, canalización) — parte defensiva separada.
+- Esquiva con i-frames; lock-on opcional (Q).
+- Enemigos con telegraphs y FSM (Goteo, Propagador, Núcleo Corrupto).
+- HUD: **Vitalidad / Energía** (tooltip con términos técnicos).
+
+**Post-0b (P1):**
+- `NullReferenceBug`, `StackOverflowBrute`, parry opcional.
 
 #### Progresión / XP
 
@@ -349,8 +371,9 @@ Assets/
 
 | Fase | Nombre | Scope | Criterio de done |
 |---|---|---|---|
-| 0 | Documentación y GDD v2 | Docs, no código | GDD_v2 borrador aprobado por equipo |
-| 1 | Fundación del mundo | Terreno, biomas, sky, iluminación, hub greybox | Exploración libre 5 min sin combate |
+| 0 | Documentación y GDD v2 | Docs, no código | GDD_v2 aprobado por equipo |
+| **0b** | **Fundación game feel** | **Combate, animación, feedback** | **1 arena, 3 enemigos, 60 s divertidos** |
+| 1 | Fundación del mundo | Terreno, biomas, sky, iluminación, hub greybox | Exploración libre 5 min **con combate ya legible** |
 | 2 | Bootstrap world + regiones | WorldBootstrap, RegionTrigger, migración HUD básico | HUD muestra región; checkpoints funcionan |
 | 3 | Combate extendido + enemigos | Lock-on, nuevos bugs, RAM bar | Combate en overworld estable |
 | 4 | Progresión + save local | XP, niveles, SaveManager JSON | Cerrar y reabrir conserva progreso |
@@ -365,8 +388,28 @@ Assets/
 #### Fase 0 — Documentación (1 semana)
 
 - **Archivos:** `GDD_v2.md`, actualizar ARCHITECTURE, README, CHANGELOG, REQUIREMENTS.
-- **Done:** Equipo alineado; Demo_10min re-etiquetado como "tutorial legacy".
+- **Done:** Equipo alineado; Demo_10min re-etiquetado como "Simulación de arranque (legacy)".
 - **Agente sugerido:** Plan / reasoning-heavy (decisiones de diseño, tablas de isomorfismo).
+
+#### Fase 0b — Fundación game feel (2–3 semanas) ⚠️ BLOQUEANTE
+
+**Prerrequisito de Fase 1.** Sin esta fase, el open world amplifica un combate roto.
+
+- **Sistemas:**
+  - Rig + Animator Mixamo (idle/walk/run/dodge/attack×3/hit/death).
+  - Refactor `DebugStrikeAbility` → combo Corte de Traza (input buffer, hitboxes alineadas a anim).
+  - Separar GC → `PurgeWaveAbility` + `RestoreAbility`.
+  - `MemoryLeakEnemy` → FSM con telegraph/attack/recover; reducir drain pasivo en adds.
+  - Hitstop, SFX placeholder, flash daño, camera shake ligero.
+  - HUD: Vitalidad/Energía; objetivo de combate solo cuando hay threat.
+  - Arena de prueba `Combat_Arena.unity` (o sub-escena en `Prototype.unity`).
+- **Archivos nuevos / tocados:** prefab `Player_Thread`, `CombatFeelConfig` (SO opcional), scripts Player/Enemies, `CanvasHUD`.
+- **Done (criterios GDD v2 §9):**
+  - Jugador animado; esquiva con i-frames; combo 3 golpes con feedback en cada connect.
+  - Goteo telegrapha; jugador esquiva 3 veces seguidas en playtest.
+  - Purga vs Restaurar visualmente distintos.
+  - **Gate:** playtest interno — “¿60 s de combate son divertidos?” → sí antes de Fase 1.
+- **Agente sugerido:** Implement + playtest iterativo (prioridad máxima).
 
 #### Fase 1 — Fundación del mundo (2–3 semanas)
 
@@ -381,11 +424,12 @@ Assets/
 - **Done:** Entrar a bioma actualiza HUD y checkpoint; `DemoBootstrap` no se usa en World_Main.
 - **Agente sugerido:** Implement (C# modular, bajo riesgo).
 
-#### Fase 3 — Combate extendido (1–2 semanas)
+#### Fase 3 — Combate extendido en overworld (1–2 semanas)
 
-- **Sistemas:** Lock-on, `RamPressure`, nuevas variantes enemigas, pooling fragmentos.
-- **Done:** 3 tipos de enemigo en overworld; barra RAM + alerta RF-15; combate ≥ calidad demo actual.
+- **Sistemas:** Lock-on refinado, `RamPressure`, variantes adicionales (NullReference, etc.), pooling fragmentos.
+- **Done:** 3 tipos de enemigo en overworld; barra RAM + alerta RF-15; combate **≥ calidad Fase 0b** (no demo PoC).
 - **Agente sugerido:** Implement + playtest manual.
+- **Nota:** La base de feel ya debe existir (Fase 0b); esta fase **extiende** al mundo abierto.
 
 #### Fase 4 — Progresión + save (1 semana)
 
@@ -440,7 +484,7 @@ Assets/
 
 | Documento | Contenido |
 |---|---|
-| `docs/GDD_v2.md` | Visión open world, mundo vivo, mecánicas RPG, fuera de alcance actualizado |
+| `docs/GDD_v2.md` | ✅ Visión creativa, auditoría combate, mecánicas, Fase 0b |
 | `docs/WORLD_RPG_PLAN.md` | Este plan (persistente) |
 | `docs/QUEST_DESIGN.md` | (Opcional Fase 5) Tabla de quests con objetivos pedagógicos |
 
@@ -477,7 +521,7 @@ EXISTE                          NECESARIO PARA MVP RPG
 ─────────────────────────────────────────────────────────
 SystemIntegrity, CpuCycles  →   + PlayerProgression, RamPressure
 MemoryLeakEnemy             →   + 2–3 variantes, spawn director
-GC + Debug Strike           →   + lock-on, feedback VFX
+PoC Debug Strike + GC       →   Fase 0b: combo, Purga, Restaurar, anim, i-frames
 CheckpointSystem            →   + SaveManager, fast travel terminals
 CanvasHUD                   →   + WorldHUD (map, quests, RAM, inv)
 TutorialDirector            →   + DialogueRunner
@@ -494,12 +538,14 @@ GameSession local           →   SaveData + (opcional) API sync
 | Scope creep (MMO-like) | Alto | Límite 600×600 m MVP; lista P0 estricta |
 | Arte insuficiente | Medio | 1 kit modular + greybox temático; Blender solo hero props |
 | Performance en terrain | Medio | Profiling Fase 8; LOD; limitar spawns activos |
-| Desalineación pedagógica | Alto | Cada quest mapea a 1 concepto; revisión docente |
-| Pérdida del demo funcional | Bajo | Mantener Demo_10min intacto |
+| Desalineación pedagógica | Alto | Cada quest mapea a 1 concepto; codex opcional; revisión docente |
+| Combate crudo en open world | **Alto** | **Fase 0b obligatoria**; gate de playtest antes de terreno |
+| Pérdida del demo funcional | Bajo | Mantener Demo_10min intacto como legacy pedagógico |
 
 ## Apéndice C — Referencias internas
 
-- [`docs/GDD_v1.md`](GDD_v1.md) — Art Bible, isomorfismo, controles
+- [`docs/GDD_v2.md`](GDD_v2.md) — **visión principal**, combate, animación, Fase 0b
+- [`docs/GDD_v1.md`](GDD_v1.md) — Art Bible, demo legacy, isomorfismo original
 - [`docs/GDD_v0.md`](GDD_v0.md) — Core loop original
 - [`ARCHITECTURE.md`](../ARCHITECTURE.md) — Arquitectura actual
 - [`docs/REQUIREMENTS.md`](REQUIREMENTS.md) — RF/RNF académicos
