@@ -215,7 +215,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 4474276855066959150}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e7a3b2c14d5f6789a0b1c2d3e4f5678, type: 3}
+  m_Script: {fileID: 11500000, guid: e7a3b2c14d5f6789a0b1c2d3e4f56789, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NullBorn.Art.SimpleBobAnim
   amplitude: 0.05

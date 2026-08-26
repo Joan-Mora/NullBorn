@@ -7,10 +7,15 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/), y 
 ## [Unreleased]
 
 ### Fixed
-- Referencias de script rotas (`SimpleBobAnim`) en prefabs y escena `Demo_10min`.
+- GUID inválido en `SimpleBobAnim.cs.meta` (Unity ignoraba el script → error CS0246 en compilación).
+- Multiplicación inválida `Vector3 * (float, float, float)` en `LeakAvatarBuilder.CreateSpike` (corregido con `new Vector3(...)`).
+- Referencias de script `SimpleBobAnim` en prefabs (`Player_Thread`, `Leak_*`) y escena `Demo_10min.unity` alineadas con el GUID del `.meta`.
 - HUD Canvas con texto vertical ilegible (RectTransform, CanvasScaler, overflow).
 - Barra de leak mostrando **LEAK BOSS** en Boot Sector antes de llegar al Kernel.
 - Carteles de zona y siluetas placeholder más legibles.
+
+### Changed
+- Requisitos RQF/RQNF movidos de `.pptx` a [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md); archivos `.pptx` eliminados del repo y añadidos a `.gitignore`.
 
 ### Added
 - `SimpleBobAnim.cs` como script independiente.

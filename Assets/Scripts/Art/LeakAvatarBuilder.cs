@@ -17,7 +17,7 @@ namespace NullBorn.Art
                 Vector3 pos = new Vector3(Mathf.Cos(a), 0.15f + (i % 2) * 0.12f, Mathf.Sin(a)) * (0.65f * scale);
                 CreateSphere(root.transform, $"Nodule_{i}", pos, Vector3.one * (0.32f * scale), mat);
             }
-            CreateSpike(root.transform, "Spike_T", Vector3.up * (0.75f * scale), Vector3.one * (0.18f * scale, 0.55f * scale, 0.18f * scale), mat);
+            CreateSpike(root.transform, "Spike_T", Vector3.up * (0.75f * scale), new Vector3(0.18f * scale, 0.55f * scale, 0.18f * scale), mat);
 
             root.AddComponent<SimpleBobAnim>();
             return root;

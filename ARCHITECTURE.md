@@ -31,7 +31,19 @@ Documento de arquitectura del vertical slice Unity. Complementa [`docs/GDD_v1.md
 | `Enemies/` | `MemoryLeakEnemy`, `MemoryFragment`, variantes Basic/Spawner/Boss |
 | `Demo/` | Flujo de zonas, tutoriales, triggers |
 | `UI/` | `CanvasHUD` (uGUI runtime) |
-| `Art/` | Builders procedurales, VFX mínimos, `SimpleBobAnim`, carteles de zona |
+| `Art/` | Avatares procedurales, animación idle, VFX mínimos, carteles de zona (ver abajo) |
+
+### Arte procedural (`Assets/Scripts/Art/`)
+
+| Script | Función |
+|---|---|
+| `ThreadAvatarBuilder` | Primitivas URP del jugador (`Visual_ThreadAvatar`); adjunta `SimpleBobAnim` al root visual |
+| `LeakAvatarBuilder` | Esferas + cilindro del leak; escala por variante; adjunta `SimpleBobAnim` |
+| `SimpleBobAnim` | Bob vertical en `Update` sobre avatares placeholder (idle sin Animator) |
+| `WorldZoneSign` | Cartel 3D con nombre de zona |
+| `GcPulseVfx` | Pulso visual al usar Garbage Collection |
+
+Invocado desde `BuildDemo10MinScene` al generar prefabs y al instanciar avatares en Play. Los prefabs referencian `SimpleBobAnim` por GUID del `.meta`; si el GUID cambia, hay que actualizar prefabs y `Demo_10min.unity`.
 
 ### Editor (`Assets/Editor/`)
 

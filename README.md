@@ -2,6 +2,10 @@
 
 **NullBorn** es un prototipo Action-RPG 3D educativo (vertical slice) desarrollado en Unity 6 con URP. El jugador controla un **Thread** que debe estabilizar un sistema operativo corrupto mediante **Garbage Collection**, **depuración** y gestión de **ciclos de CPU**, usando **isomorfismo lúdico** para gamificar conceptos básicos de desarrollo de software.
 
+## Estado
+
+Vertical slice **Demo_10min** jugable en Unity 6 (Boot → Heap → Kernel). Compila sin errores en **6000.5.9f1** tras alinear GUID de `SimpleBobAnim` y corregir builders de avatar.
+
 ## Requisitos
 
 | Componente | Versión |
@@ -45,7 +49,7 @@ Recorrido lineal de tres zonas:
 - **Lenguaje:** C# (`NullBorn` namespace)
 - **Arte:** Primitivas URP + materiales temáticos (`Assets/Art/Materials/`)
 - **Persistencia (plan académico):** Unity → API → PostgreSQL (pendiente en este slice)
-- **Documentación:** [`ARCHITECTURE.md`](ARCHITECTURE.md), [`docs/GDD_v1.md`](docs/GDD_v1.md), [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md)
+- **Documentación:** [`CHANGELOG.md`](CHANGELOG.md), [`ARCHITECTURE.md`](ARCHITECTURE.md), [`docs/GDD_v1.md`](docs/GDD_v1.md), [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md)
 
 ## Escenas
 
