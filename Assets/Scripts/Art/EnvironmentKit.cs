@@ -178,7 +178,8 @@ namespace NullBorn.Art
             Light light = root.AddComponent<Light>();
             light.type = LightType.Point;
             light.color = glow.HasProperty("_EmissionColor") ? glow.GetColor("_EmissionColor") : Color.cyan;
-            light.intensity = 1.4f;
+            light.intensity = 0f; // emission only — Point Lights mataban el FPS en URP
+            light.enabled = false;
             light.range = 12f;
             light.transform.localPosition = new Vector3(0.35f, 3f, 0f);
 
@@ -271,9 +272,9 @@ namespace NullBorn.Art
                     float n = Mathf.PerlinNoise(ox + x * 0.12f, oz + z * 0.12f);
                     float n2 = Mathf.PerlinNoise(ox + x * 0.35f, oz + z * 0.35f);
                     float h = (n * 0.75f + n2 * 0.25f) * heightAmp;
-                    // Flatten center plaza disk
+                    // Flatten center plaza + keep gentle hills elsewhere
                     float dist = Mathf.Sqrt(wx * wx + wz * wz);
-                    float flatten = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((dist - 18f) / 22f));
+                    float flatten = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((dist - 22f) / 28f));
                     h *= flatten;
                     verts[i] = new Vector3(wx, h, wz);
                     uvs[i] = new Vector2(x / (float)res * 8f, z / (float)res * 8f);

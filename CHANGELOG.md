@@ -29,6 +29,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/), y 
 - **`docs/REQUIREMENTS.md`** — RF-07/13/15/17–20 y RF-21–24 actualizados.
 
 ### Fixed
+- Overworld: discos de bioma recortaban el terreno, Kernel flotaba y el FPS caía (~15–20) por mallas y luces; `WorldLayoutBuilder` ahora destruye `WorldRoot`/`GameSystems`/`Player_Thread` al regenerar, usa un solo terreno (res 32), Kernel a nivel de suelo y menos props/farolas (sombras direccionales off).
 - Spawn muerto / R respawn muerto: auto-save al colapsar guardaba Vitalidad 0 y al recargar escena se reaplicaba; R en derrota ahora revive en checkpoint con HP lleno; load/save nunca persisten HP 0.
 - Caída fuera del mapa: snap a suelo en spawn/respawn/load (`CheckpointSystem.SnapToGround`); CharacterController con centro correcto.
 - Leaks drenaban Vitalidad desde cualquier distancia (boss incluido); el drain ahora solo aplica en aura/melee.

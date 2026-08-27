@@ -6,7 +6,7 @@
 
 **Open World RPG en desarrollo** — **fases 0–9 implementadas** (plan [`docs/WORLD_RPG_PLAN.md`](docs/WORLD_RPG_PLAN.md); polish/backend real pendientes). Escena principal: `World_Main`. Arena de combate: `Combat_Arena`. El vertical slice **Demo_10min** se conserva como *Simulación de arranque (legacy)*.
 
-**Diseño:** [`docs/GDD_v2.md`](docs/GDD_v2.md) · **Plan:** [`docs/WORLD_RPG_PLAN.md`](docs/WORLD_RPG_PLAN.md) · **Legacy:** [`docs/GDD_v1.md`](docs/GDD_v1.md)
+**Diseño:** [`docs/GDD_v2.md`](docs/GDD_v2.md) · **Plan:** [`docs/WORLD_RPG_PLAN.md`](docs/WORLD_RPG_PLAN.md) · **Arte entorno:** [`docs/ENVIRONMENT_ART_BRIEF.md`](docs/ENVIRONMENT_ART_BRIEF.md) · **Legacy:** [`docs/GDD_v1.md`](docs/GDD_v1.md)
 
 ## Requisitos
 
@@ -52,7 +52,7 @@ Click/F = combo (si hay `TraceCutCombo`) · **E/G = Garbage Collection** combina
 - **Lenguaje:** C# (`NullBorn` namespace)
 - **Arte:** Primitivas URP + materiales temáticos; Mixamo pendiente de importar
 - **Persistencia:** JSON local + mock API (`INullBornApi`). PostgreSQL real pendiente (RF-17–20 parcial)
-- **Documentación:** GDD v2, ARCHITECTURE, REQUIREMENTS, WORLD_RPG_PLAN, CHANGELOG
+- **Documentación:** GDD v2, ARCHITECTURE, REQUIREMENTS, WORLD_RPG_PLAN, [ENVIRONMENT_ART_BRIEF](docs/ENVIRONMENT_ART_BRIEF.md), CHANGELOG
 
 ## Escenas
 

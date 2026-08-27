@@ -18,14 +18,19 @@ namespace NullBorn.World
     {
         public static void Build()
         {
+            foreach (string n in new[] { "WorldRoot", "GameSystems", "Player_Thread" })
+            {
+                GameObject leftover;
+                while ((leftover = GameObject.Find(n)) != null)
+                    Object.DestroyImmediate(leftover);
+            }
+
             ApplySky();
 
             // Textured biome grounds
             Texture2D texHub = ProceduralTextures.GridAlbedo(256, new Color(0.14f, 0.18f, 0.22f), new Color(0.22f, 0.45f, 0.55f), 16);
             Texture2D texGrass = ProceduralTextures.NoiseAlbedo(256, new Color(0.12f, 0.22f, 0.16f), new Color(0.2f, 0.35f, 0.22f), 0.08f, 11);
-            Texture2D texCorrupt = ProceduralTextures.NoiseAlbedo(256, new Color(0.18f, 0.08f, 0.14f), new Color(0.35f, 0.1f, 0.22f), 0.1f, 22);
             Texture2D texRock = ProceduralTextures.NoiseAlbedo(256, new Color(0.22f, 0.24f, 0.28f), new Color(0.35f, 0.38f, 0.42f), 0.12f, 33);
-            Texture2D texSand = ProceduralTextures.NoiseAlbedo(256, new Color(0.28f, 0.22f, 0.12f), new Color(0.42f, 0.32f, 0.16f), 0.09f, 44);
             Texture2D texBark = ProceduralTextures.NoiseAlbedo(128, new Color(0.2f, 0.12f, 0.08f), new Color(0.35f, 0.22f, 0.12f), 0.2f, 55);
             Texture2D texLeaf = ProceduralTextures.NoiseAlbedo(128, new Color(0.1f, 0.28f, 0.18f), new Color(0.18f, 0.45f, 0.28f), 0.15f, 66);
             Texture2D texLeafBad = ProceduralTextures.NoiseAlbedo(128, new Color(0.25f, 0.08f, 0.18f), new Color(0.45f, 0.12f, 0.3f), 0.15f, 77);
@@ -33,10 +38,6 @@ namespace NullBorn.World
 
             Material matGround = RuntimeMaterials.Textured(texGrass, Color.white, 1f);
             Material matHubFloor = RuntimeMaterials.Textured(texHub, Color.white, 1f, new Color(0.05f, 0.2f, 0.28f) * 0.2f);
-            Material matHeap = RuntimeMaterials.Textured(texCorrupt, Color.white, 1f, new Color(0.35f, 0.05f, 0.2f) * 0.15f);
-            Material matStack = RuntimeMaterials.Textured(texRock, Color.white, 1f);
-            Material matIo = RuntimeMaterials.Textured(texSand, Color.white, 1f);
-            Material matKernel = RuntimeMaterials.Lit(new Color(0.08f, 0.08f, 0.12f), new Color(0.35f, 0.05f, 0.45f) * 0.35f);
             Material matWall = RuntimeMaterials.Lit(new Color(0.28f, 0.32f, 0.38f), Color.black);
             Material matWallAccent = RuntimeMaterials.Lit(new Color(0.12f, 0.35f, 0.45f), new Color(0.15f, 0.7f, 0.95f) * 0.8f);
             Material matBark = RuntimeMaterials.Textured(texBark, Color.white, 2f);
@@ -61,16 +62,22 @@ namespace NullBorn.World
             EnsureCamera();
             GameObject systems = EnsureSystems();
 
-            // Continuous living terrain (~220m)
-            EnvironmentKit.GroundMesh("Terrain_World", Vector3.zero, 220f, 64, 4.5f, 101, matGround, artRoot);
+            // Continuous living terrain (~220m) — low res / low amp to avoid clipping props
+            EnvironmentKit.GroundMesh("Terrain_World", Vector3.zero, 220f, 32, 1.2f, 101, matGround, artRoot);
 
-            // Hub plaza disc (readable floor)
+            // Hub plaza disc (readable floor; collider removed — terrain handles collision)
             GameObject plaza = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             plaza.name = "Floor_Plaza";
             plaza.transform.SetParent(artRoot, true);
             plaza.transform.position = new Vector3(0f, 0.05f, 0f);
             plaza.transform.localScale = new Vector3(42f, 0.08f, 42f);
             plaza.GetComponent<Renderer>().sharedMaterial = matHubFloor;
+            Collider plazaCol = plaza.GetComponent<Collider>();
+            if (plazaCol != null)
+            {
+                if (Application.isPlaying) Object.Destroy(plazaCol);
+                else Object.DestroyImmediate(plazaCol);
+            }
 
             // Buildings around plaza
             EnvironmentKit.Building("Bld_North", new Vector3(-10f, 0f, 14f), new Vector3(6f, 1f, 5f), 4f, matWall, matWallAccent, artRoot);
@@ -80,9 +87,9 @@ namespace NullBorn.World
             EnvironmentKit.Building("Landmark_BootSpire", new Vector3(0f, 0f, -18f), new Vector3(3.2f, 1f, 3.2f), 7f, matWallAccent, matCyan, artRoot);
 
             Box("QuestBoard", new Vector3(-7f, 1.4f, 6f), new Vector3(0.3f, 2.8f, 3.2f), matCyan, root);
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < 4; i++)
             {
-                float ang = i * 45f * Mathf.Deg2Rad;
+                float ang = i * 90f * Mathf.Deg2Rad;
                 Vector3 lp = new Vector3(Mathf.Cos(ang), 0f, Mathf.Sin(ang)) * 16f;
                 EnvironmentKit.Lamp($"Lamp_Plaza_{i}", lp, matWall, matCyan, artRoot);
             }
@@ -98,12 +105,11 @@ namespace NullBorn.World
             MakeShopKeeper(matShop, root);
 
             // Healthy ring forest around hub
-            ScatterTrees(artRoot, Vector3.zero, 28f, 42f, 28, matBark, matLeaf, false);
+            ScatterTrees(artRoot, Vector3.zero, 28f, 42f, 12, matBark, matLeaf, false);
 
             // === HEAP WILDS (+Z) ===
-            PaintBiomeDisc(artRoot, new Vector3(0f, 0.04f, 70f), 48f, matHeap);
-            ScatterTrees(artRoot, new Vector3(0f, 0f, 70f), 8f, 40f, 36, matBark, matLeafBad, true);
-            ScatterRocks(artRoot, new Vector3(0f, 0f, 70f), 36f, 18, matRock);
+            ScatterTrees(artRoot, new Vector3(0f, 0f, 70f), 8f, 40f, 16, matBark, matLeafBad, true);
+            ScatterRocks(artRoot, new Vector3(0f, 0f, 70f), 36f, 9, matRock);
             EnvironmentKit.Building("Ruin_Heap_A", new Vector3(-14f, 0f, 78f), new Vector3(5f, 1f, 4f), 2f, matMag, matBoss, artRoot);
             EnvironmentKit.Building("Ruin_Heap_B", new Vector3(16f, 0f, 66f), new Vector3(4f, 1f, 6f), 3f, matWall, matMag, artRoot);
             WorldZoneSign.Create("HEAP WILDS", "Fragmentación · bosque corrupto", new Vector3(-12f, 2.4f, 48f), new Color(0.95f, 0.2f, 0.65f));
@@ -119,7 +125,6 @@ namespace NullBorn.World
             DungeonLayoutBuilder.BuildInline("Dungeon_HeapCave", new Vector3(-8f, 0f, 102f), root);
 
             // === STACK RIDGE (-X) ===
-            PaintBiomeDisc(artRoot, new Vector3(-70f, 2.04f, 20f), 42f, matStack);
             for (int i = 0; i < 7; i++)
             {
                 Vector3 terrace = new Vector3(-52f - i * 4.5f, i * 0.55f, 16f + i * 2.2f);
@@ -127,7 +132,7 @@ namespace NullBorn.World
             }
 
             EnvironmentKit.Building("Landmark_StackTower", new Vector3(-82f, 2f, 28f), new Vector3(4f, 1f, 4f), 8f, matWallAccent, matCyan, artRoot);
-            ScatterRocks(artRoot, new Vector3(-70f, 2f, 22f), 30f, 14, matRock);
+            ScatterRocks(artRoot, new Vector3(-70f, 2f, 22f), 30f, 7, matRock);
             WorldZoneSign.Create("STACK RIDGE", "Profundidad de llamada", new Vector3(-48f, 4f, 8f), new Color(0.4f, 0.8f, 1f));
             Checkpoint cpStack = MakeCheckpoint("Checkpoint_Stack", "stack", new Vector3(-48f, 2.1f, 16f), root);
             RegionDefinition stack = RegionDefinition.CreateRuntime(RegionId.StackRidge, "Stack Ridge",
@@ -140,11 +145,10 @@ namespace NullBorn.World
             DungeonLayoutBuilder.BuildInline("Dungeon_StackChasm", new Vector3(-96f, 2f, 48f), root);
 
             // === I/O WASTES (+X) ===
-            PaintBiomeDisc(artRoot, new Vector3(70f, 0.04f, 20f), 45f, matIo);
             EnvironmentKit.Antenna("Landmark_IoTower", new Vector3(82f, 0f, 28f), 16f, matWall, matShop, artRoot);
             EnvironmentKit.Antenna("Relay_Io_B", new Vector3(62f, 0f, 34f), 10f, matWall, matCyan, artRoot);
-            ScatterRocks(artRoot, new Vector3(70f, 0f, 20f), 32f, 20, matRock);
-            for (int i = 0; i < 10; i++)
+            ScatterRocks(artRoot, new Vector3(70f, 0f, 20f), 32f, 10, matRock);
+            for (int i = 0; i < 5; i++)
             {
                 Vector3 p = new Vector3(70f, 0f, 20f) + Random.insideUnitSphere * 28f;
                 p.y = 0f;
@@ -159,23 +163,22 @@ namespace NullBorn.World
             MakeTerminal("ft_io", "I/O", new Vector3(58f, 0.6f, 12f), matShop, root);
             SpawnLeak("Leak_IO_A", new Vector3(74f, 1.15f, 26f), LeakVariant.Basic, matLeak, root.transform);
 
-            // === KERNEL HEIGHTS (+Z far) ===
-            PaintBiomeDisc(artRoot, new Vector3(0f, 4.04f, 150f), 36f, matKernel);
-            EnvironmentKit.Bridge("Bridge_ToKernel", new Vector3(0f, 0.2f, 115f), new Vector3(0f, 4.1f, 138f), 6f, matPath, matBoss, artRoot);
+            // === KERNEL HEIGHTS (+Z far) — ground level (biome disc removed) ===
+            EnvironmentKit.Bridge("Bridge_ToKernel", new Vector3(0f, 0.2f, 115f), new Vector3(0f, 0.2f, 138f), 6f, matPath, matBoss, artRoot);
             for (int i = 0; i < 8; i++)
             {
                 float ang = i * 45f * Mathf.Deg2Rad;
-                Vector3 p = new Vector3(0f, 4f, 155f) + new Vector3(Mathf.Cos(ang), 0f, Mathf.Sin(ang)) * 14f;
+                Vector3 p = new Vector3(0f, 0f, 155f) + new Vector3(Mathf.Cos(ang), 0f, Mathf.Sin(ang)) * 14f;
                 EnvironmentKit.Building($"KernelPillar_{i}", p, new Vector3(2.2f, 1f, 2.2f), 3.5f, matWall, matBoss, artRoot);
             }
 
-            WorldZoneSign.Create("KERNEL HEIGHTS", "Núcleo Corrupto", new Vector3(0f, 7f, 138f), new Color(0.75f, 0.15f, 1f));
-            Checkpoint cpKernel = MakeCheckpoint("Checkpoint_Kernel", "kernel", new Vector3(0f, 4.1f, 136f), root);
+            WorldZoneSign.Create("KERNEL HEIGHTS", "Núcleo Corrupto", new Vector3(0f, 2.4f, 138f), new Color(0.75f, 0.15f, 1f));
+            Checkpoint cpKernel = MakeCheckpoint("Checkpoint_Kernel", "kernel", new Vector3(0f, 0.1f, 136f), root);
             RegionDefinition kernel = RegionDefinition.CreateRuntime(RegionId.KernelHeights, "Kernel Heights",
                 new Color(0.32f, 0.22f, 0.45f), new Color(0.15f, 0.08f, 0.22f), 0.008f, 0.35f);
-            MakeRegion("Region_Kernel", kernel, new Vector3(0f, 6f, 150f), new Vector3(46f, 14f, 48f), cpKernel, null, root);
-            MakePortal("Portal_KernelGate", "KernelGate", "Kernel Gate", new Vector3(0f, 5.5f, 142f), true, matBoss, root);
-            SpawnLeak("Leak_Boss_Kernel", new Vector3(0f, 5.6f, 155f), LeakVariant.Boss, matBoss, root.transform, true);
+            MakeRegion("Region_Kernel", kernel, new Vector3(0f, 2f, 150f), new Vector3(46f, 14f, 48f), cpKernel, null, root);
+            MakePortal("Portal_KernelGate", "KernelGate", "Kernel Gate", new Vector3(0f, 1.5f, 142f), true, matBoss, root);
+            SpawnLeak("Leak_Boss_Kernel", new Vector3(0f, 1.2f, 155f), LeakVariant.Boss, matBoss, root.transform, true);
 
             // Roads connecting biomes
             EnvironmentKit.PathSegment("Road_Plaza_Heap", new Vector3(0f, 0.08f, 18f), new Vector3(0f, 0.08f, 48f), 5f, matPath, artRoot);
@@ -192,16 +195,6 @@ namespace NullBorn.World
             if (systems.GetComponent<WorldBootstrap>() == null) systems.AddComponent<WorldBootstrap>();
 
             Debug.Log("WorldLayoutBuilder: Ciudad-Runtime con entorno procedural (terreno, árboles, edificios, caminos).");
-        }
-
-        private static void PaintBiomeDisc(Transform parent, Vector3 center, float diameter, Material mat)
-        {
-            GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            go.name = "BiomeFloor";
-            go.transform.SetParent(parent, true);
-            go.transform.position = center;
-            go.transform.localScale = new Vector3(diameter, 0.06f, diameter);
-            go.GetComponent<Renderer>().sharedMaterial = mat;
         }
 
         private static void ScatterTrees(Transform parent, Vector3 center, float inner, float outer, int count, Material bark, Material leaf, bool deadMix)
@@ -284,7 +277,7 @@ namespace NullBorn.World
             {
                 existing.color = new Color(1f, 0.95f, 0.88f);
                 existing.intensity = 1.35f;
-                existing.shadows = LightShadows.Soft;
+                existing.shadows = LightShadows.None;
                 existing.transform.rotation = Quaternion.Euler(48f, -35f, 0f);
                 return;
             }
@@ -294,7 +287,7 @@ namespace NullBorn.World
             light.type = LightType.Directional;
             light.color = new Color(1f, 0.95f, 0.88f);
             light.intensity = 1.35f;
-            light.shadows = LightShadows.Soft;
+            light.shadows = LightShadows.None;
             lightGo.transform.rotation = Quaternion.Euler(48f, -35f, 0f);
         }
 

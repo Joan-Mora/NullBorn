@@ -33,7 +33,7 @@ namespace NullBorn.EditorTools
             if (showDialog)
             {
                 EditorUtility.DisplayDialog("NullBorn",
-                    "Escena World_Main lista (hub + biomas greybox).\nAbre Assets/Scenes/World_Main y pulsa Play.",
+                    "Escena World_Main regenerada limpia (sin WorldRoot duplicado; un solo terreno, sin discos de bioma).\nAbre Assets/Scenes/World_Main y pulsa Play.",
                     "OK");
             }
         }
