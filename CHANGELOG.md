@@ -29,6 +29,9 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/), y 
 - **`docs/REQUIREMENTS.md`** — RF-07/13/15/17–20 y RF-21–24 actualizados.
 
 ### Fixed
+- Spawn muerto / R respawn muerto: auto-save al colapsar guardaba Vitalidad 0 y al recargar escena se reaplicaba; R en derrota ahora revive en checkpoint con HP lleno; load/save nunca persisten HP 0.
+- Caída fuera del mapa: snap a suelo en spawn/respawn/load (`CheckpointSystem.SnapToGround`); CharacterController con centro correcto.
+- Leaks drenaban Vitalidad desde cualquier distancia (boss incluido); el drain ahora solo aplica en aura/melee.
 - CS0118: `Shop` trataba el namespace `NullBorn.RPG.Inventory` como tipo; alias `PlayerInventory` en consumidores.
 - CS1503: `WorldLayoutBuilder.SpawnLeak` recibía `GameObject` donde espera `Transform` (se pasa `.transform`).
 - API Unity 6.5: `FindObjectsByType<T>(FindObjectsSortMode.None)` sustituido por `FindObjectsByType<T>()`.

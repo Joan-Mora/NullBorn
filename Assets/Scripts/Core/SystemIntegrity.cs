@@ -32,7 +32,8 @@ namespace NullBorn.Core
 
         public void Restore(float amount)
         {
-            if (amount <= 0f || IsCollapsed) return;
+            if (amount <= 0f) return;
+            // Permitir curación tras colapso (respawn / ítems / Restaurar).
             currentIntegrity = Mathf.Min(maxIntegrity, currentIntegrity + amount);
         }
 

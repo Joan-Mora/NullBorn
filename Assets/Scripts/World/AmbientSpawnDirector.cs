@@ -1,4 +1,5 @@
 using NullBorn.Art;
+using NullBorn.Core;
 using NullBorn.Enemies;
 using UnityEngine;
 
@@ -32,10 +33,15 @@ namespace NullBorn.World
 
             Vector3 offset = new Vector3(Random.Range(-18f, 18f), 0f, Random.Range(12f, 22f));
             Vector3 pos = player.position + player.TransformDirection(offset);
-            pos.y = 1.15f;
+            pos = NullBorn.Core.CheckpointSystem.SnapToGround(pos, 1.15f);
 
             LeakVariant variant = Random.value > 0.78f ? LeakVariant.NullRef : LeakVariant.Basic;
-            WorldLayoutBuilder.SpawnLeak($"Ambient_{variant}", pos, variant, leakMat);
+            GameObject go = WorldLayoutBuilder.SpawnLeak($"Ambient_{variant}", pos, variant, leakMat);
+            MemoryLeakEnemy leak = go.GetComponent<MemoryLeakEnemy>();
+            SystemIntegrity integrity = player.GetComponent<SystemIntegrity>();
+            GameSession session = GameSession.Instance;
+            Renderer rend = go.GetComponentInChildren<Renderer>();
+            leak?.Initialize(integrity, session, rend != null ? rend.sharedMaterial : leakMat);
         }
     }
 }

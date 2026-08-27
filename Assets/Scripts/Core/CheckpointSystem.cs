@@ -14,6 +14,7 @@ namespace NullBorn.Core
         private CharacterController playerController;
         private SystemIntegrity integrity;
         private CpuCycles cpu;
+        private Vector3 fallbackSpawn = new Vector3(0f, 1.2f, -4f);
 
         private void Awake()
         {
@@ -31,6 +32,7 @@ namespace NullBorn.Core
             integrity = systemIntegrity;
             cpu = cpuCycles;
             playerController = player.GetComponent<CharacterController>();
+            if (player != null) fallbackSpawn = player.position;
         }
 
         public void SetCheckpoint(Checkpoint checkpoint)
@@ -42,12 +44,14 @@ namespace NullBorn.Core
 
         public void RespawnPlayer()
         {
-            if (player == null || active == null) return;
+            if (player == null) return;
 
             Time.timeScale = 1f;
+            GameSession.Instance?.ResumePlaying();
 
-            Vector3 pos = active.SpawnPoint.position;
-            Quaternion rot = active.SpawnPoint.rotation;
+            Vector3 pos = active != null ? active.SpawnPoint.position : fallbackSpawn;
+            Quaternion rot = active != null ? active.SpawnPoint.rotation : Quaternion.identity;
+            pos = SnapToGround(pos);
 
             if (playerController != null) playerController.enabled = false;
             player.SetPositionAndRotation(pos, rot);
@@ -55,6 +59,22 @@ namespace NullBorn.Core
 
             integrity?.ResetIntegrity();
             cpu?.ResetCycles();
+        }
+
+        public static Vector3 SnapToGround(Vector3 pos, float hover = 1.15f)
+        {
+            Vector3 origin = pos + Vector3.up * 8f;
+            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, 40f, ~0, QueryTriggerInteraction.Ignore))
+            {
+                return hit.point + Vector3.up * hover;
+            }
+
+            if (pos.y < 0.5f || pos.y > 80f)
+            {
+                pos.y = hover;
+            }
+
+            return pos;
         }
     }
 }

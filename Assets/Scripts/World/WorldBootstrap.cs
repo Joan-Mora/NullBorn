@@ -52,9 +52,20 @@ namespace NullBorn.World
 
             if (!Input.GetKeyDown(KeyCode.R)) return;
             Time.timeScale = 1f;
-            if (session != null && (session.CurrentState == GameSession.State.Victory || session.CurrentState == GameSession.State.Defeat))
+
+            // Victoria: reinicio limpio de escena.
+            if (session != null && session.CurrentState == GameSession.State.Victory)
             {
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                return;
+            }
+
+            // Derrota / muerte: respawn en checkpoint CON vida (no recargar save con HP 0).
+            if (session != null && session.CurrentState == GameSession.State.Defeat)
+            {
+                CheckpointSystem.Instance?.RespawnPlayer();
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
                 return;
             }
 
@@ -74,6 +85,12 @@ namespace NullBorn.World
 
             player.tag = "Player";
             playerTransform = player.transform;
+
+            // Asegurar pie sobre el suelo al nacer (evita caer fuera del mapa).
+            CharacterController cc = player.GetComponent<CharacterController>();
+            if (cc != null) cc.enabled = false;
+            playerTransform.position = CheckpointSystem.SnapToGround(playerTransform.position);
+            if (cc != null) cc.enabled = true;
 
             SystemIntegrity integrity = player.GetComponent<SystemIntegrity>();
             CpuCycles cpu = player.GetComponent<CpuCycles>();
@@ -109,9 +126,19 @@ namespace NullBorn.World
             SaveManager save = systems.GetComponent<SaveManager>();
             save?.RegisterPlayer(player.transform);
             save?.BeginApiSession(player.GetComponent<PlayerProgression>() != null ? player.GetComponent<PlayerProgression>().Level : 1);
+
+            // Auto-load: si el save tenía muerte (HP 0), Apply ya rellena vida.
+            // Si el save deja al jugador bajo el suelo, SnapToGround lo corrige.
             if (save != null && save.HasSave)
             {
                 save.TryLoad();
+                // Garantía post-load: nunca empezar colapsado.
+                if (integrity != null && integrity.IsCollapsed)
+                {
+                    integrity.ResetIntegrity();
+                    session.ResumePlaying();
+                    checkpoints.RespawnPlayer();
+                }
             }
 
             leaks = FindObjectsByType<MemoryLeakEnemy>();
@@ -140,6 +167,7 @@ namespace NullBorn.World
                 {
                     Cursor.lockState = CursorLockMode.None;
                     Cursor.visible = true;
+                    // Derrota: notificar API sin guardar HP 0.
                     if (state == GameSession.State.Defeat) save?.EndSession(false);
                 }
             };

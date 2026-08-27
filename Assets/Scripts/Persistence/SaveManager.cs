@@ -54,6 +54,11 @@ namespace NullBorn.Persistence
             CpuCredits credits = player.GetComponent<CpuCredits>();
             PlayerInventory inv = player.GetComponent<PlayerInventory>();
 
+            float hp = integrity != null ? integrity.CurrentIntegrity : 100f;
+            float maxHp = integrity != null ? integrity.MaxIntegrity : 100f;
+            // Nunca persistir un estado colapsado: el siguiente arranque quedaría muerto.
+            if (hp <= 0.01f) hp = maxHp;
+
             SaveData data = new SaveData
             {
                 posX = player.position.x,
@@ -62,8 +67,8 @@ namespace NullBorn.Persistence
                 rotY = player.eulerAngles.y,
                 threadPriority = prog != null ? prog.Level : 1,
                 xp = prog != null ? prog.Xp : 0f,
-                integrity = integrity != null ? integrity.CurrentIntegrity : 100f,
-                cpu = cpu != null ? cpu.CurrentCycles : 100f,
+                integrity = hp,
+                cpu = cpu != null ? Mathf.Max(cpu.CurrentCycles, 1f) : 100f,
                 credits = credits != null ? credits.Amount : 0,
                 regionId = WorldMapController.Instance != null ? WorldMapController.Instance.CurrentRegionId.ToString() : "RuntimePlaza",
                 unlockedTerminals = WorldMapController.Instance != null ? WorldMapController.Instance.UnlockedTerminalIds : System.Array.Empty<string>(),
@@ -90,25 +95,44 @@ namespace NullBorn.Persistence
             if (player == null) player = GameObject.Find("Player_Thread")?.transform;
             if (player == null || data == null) return;
 
+            Vector3 pos = CheckpointSystem.SnapToGround(new Vector3(data.posX, data.posY, data.posZ));
             CharacterController cc = player.GetComponent<CharacterController>();
             if (cc != null) cc.enabled = false;
-            player.SetPositionAndRotation(new Vector3(data.posX, data.posY, data.posZ), Quaternion.Euler(0f, data.rotY, 0f));
+            player.SetPositionAndRotation(pos, Quaternion.Euler(0f, data.rotY, 0f));
             if (cc != null) cc.enabled = true;
 
             player.GetComponent<PlayerProgression>()?.Load(data.threadPriority, data.xp);
-            player.GetComponent<SystemIntegrity>()?.SetCurrentIntegrity(data.integrity);
-            player.GetComponent<CpuCycles>()?.SetCurrentCycles(data.cpu);
+
+            SystemIntegrity integrity = player.GetComponent<SystemIntegrity>();
+            float hp = data.integrity;
+            if (integrity != null)
+            {
+                if (hp <= 0.01f) hp = integrity.MaxIntegrity;
+                integrity.SetCurrentIntegrity(hp);
+            }
+
+            float energy = data.cpu;
+            if (energy <= 0.01f) energy = 100f;
+            player.GetComponent<CpuCycles>()?.SetCurrentCycles(energy);
             player.GetComponent<CpuCredits>()?.SetAmount(data.credits);
             player.GetComponent<PlayerInventory>()?.FromSave(data.items);
             QuestManager.Instance?.FromSave(data.quests, data.completedQuests);
             WorldMapController.Instance?.RestoreUnlocks(data.unlockedTerminals);
+            GameSession.Instance?.ResumePlaying();
         }
 
         public void EndSession(bool victory)
         {
             GameSession session = GameSession.Instance;
             NullBornApi.Current?.EndSession(apiSessionId, session != null ? session.ElapsedSeconds : 0f, victory);
-            Save();
+            // En derrota no guardamos Vitalidad 0 (el auto-load dejaba al jugador muerto al reabrir).
+            if (victory) Save();
+        }
+
+        /// <summary>Borra el save local corrupto/antiguo (útil tras bugs de muerte persistente).</summary>
+        public void ClearSave()
+        {
+            provider.Delete();
         }
     }
 }

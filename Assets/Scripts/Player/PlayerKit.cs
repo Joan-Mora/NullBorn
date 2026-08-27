@@ -28,7 +28,9 @@ namespace NullBorn.Player
             CharacterController cc = player.AddComponent<CharacterController>();
             cc.height = 2f;
             cc.radius = 0.4f;
-            cc.center = Vector3.zero;
+            cc.center = new Vector3(0f, 1f, 0f);
+            cc.skinWidth = 0.08f;
+            cc.minMoveDistance = 0f;
 
             player.AddComponent<SystemIntegrity>();
             player.AddComponent<CpuCycles>();

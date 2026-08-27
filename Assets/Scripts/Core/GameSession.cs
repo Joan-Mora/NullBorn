@@ -82,5 +82,14 @@ namespace NullBorn.Core
         {
             // No cambia estado; solo utilidad de tiempo si se necesita.
         }
+
+        /// <summary>Vuelve a Playing tras respawn (derrota) o reinicio suave.</summary>
+        public void ResumePlaying()
+        {
+            Time.timeScale = 1f;
+            if (state == State.Playing) return;
+            state = State.Playing;
+            StateChanged?.Invoke(state);
+        }
     }
 }

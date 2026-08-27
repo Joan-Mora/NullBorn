@@ -199,7 +199,13 @@ namespace NullBorn.Enemies
 
         private void TickDrain()
         {
-            if (integrity == null) return;
+            if (integrity == null || player == null) return;
+
+            // Aura local — no drenar desde el otro lado del mapa (bug open world).
+            float dist = Vector3.Distance(Flatten(transform.position), Flatten(player.position));
+            float aura = variant == LeakVariant.Boss ? aggroRange * 0.85f : attackRange * 1.35f;
+            if (dist > aura) return;
+
             float drain = drainPerSecond;
             if (variant == LeakVariant.Boss && enraged)
             {
