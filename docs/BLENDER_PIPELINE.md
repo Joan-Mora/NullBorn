@@ -13,13 +13,14 @@ Reemplazar el placeholder cian del demo por un FBX propio.
 7. Asignar el Animator a `PlayerAnimBridge` (ya está en el jugador). Hasta entonces el puente usa **punch procedural** (escala/brazos).
 8. Mantener CharacterController + scripts en la raíz del prefab.
 
-## Props de entorno (Fase 1 arte)
-El overworld actual es greybox procedural (`WorldLayoutBuilder`: planos, torres, anillos). Para sustituir:
+## Props de entorno (arte)
 
-1. Kits modulares low-poly (KayKit / Quaternius / Synty) → `Assets/Prefabs/Environment/Modular/`.
-2. 10–15 hero props en Blender (torre stack, celda RAM, terminal, antena) según Art Bible de GDD v1.
-3. Unity Terrain 512–1024 si se abandona el suelo de primitivas (sculpt manual en editor).
-4. Prefabs de vegetación “node tree” instanciados por `AmbientSpawnDirector`.
+El overworld ya tiene **entorno procedural** (`EnvironmentKit` + terreno continuo + vegetación + edificios). Para subir a assets reales:
+
+1. Kits modulares low-poly (KayKit / Quaternius / Synty / Kenney) → `Assets/Art/Environment/Modular/`.
+2. 10–15 hero props en Blender (torre stack, celda RAM, terminal, antena) según Art Bible.
+3. Opcional: Unity Terrain 512–1024 sustituyendo `EnvironmentKit.GroundMesh`.
+4. Reemplazar `EnvironmentKit.Tree/Building` por `Instantiate(prefab)` en `WorldLayoutBuilder`.
 
 ## Placeholder actual
 `ThreadAvatarBuilder` + `PlayerAnimBridge` procedural hasta que exista el FBX Mixamo.

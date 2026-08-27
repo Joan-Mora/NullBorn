@@ -1,20 +1,35 @@
 # Environment
 
-Props hero y kits low-poly (KayKit / Quaternius / Asset Store) van aquí.
+## Estado actual (arte procedural de entorno)
 
-## Estado actual
-`WorldLayoutBuilder` genera un greybox temático en Play (planos por bioma, landmarks, anillos de plaza). No requiere descargas del Asset Store.
+`WorldLayoutBuilder` genera en Play una **Ciudad-Runtime** con:
 
-## Estructura objetivo
+- Terreno continuo con altura Perlin (~220 m)
+- Biomas con suelos texturizados (noise/grid runtime)
+- Árboles vivos / muertos (`EnvironmentKit`)
+- Edificios modulares con ventanas y techos
+- Antenas I/O, farolas con point lights, rocas
+- Caminos y puentes entre regiones
+- Skybox cubemap degradado + fog + sol con soft shadows
+
+Scripts clave:
+- `Assets/Scripts/Art/EnvironmentKit.cs`
+- `Assets/Scripts/Art/ProceduralTextures.cs`
+- `Assets/Scripts/Art/RuntimeMaterials.cs`
+
+## Siguiente nivel (assets externos)
+
+Cuando puedas importar packs CC0 / Asset Store:
 
 | Carpeta | Contenido |
 |---|---|
-| `Modular/` | Kits de edificios / tiles |
-| `Heap/` | Props magenta / nodos |
-| `Stack/` | Torres y terrazas |
-| `IO/` | Antenas, dunas de bus |
-| `Hub/` | Plaza, terminales, stalls |
+| `Modular/` | KayKit / Quaternius / Synty buildings |
+| `Nature/` | Kenney Nature Kit (árboles FBX) |
+| `Heap/` / `Stack/` / `IO/` / `Hub/` | Props hero Blender |
 
-**Naming:** `Prop_<Biome>_<Name>` (ej. `Prop_Heap_NodeTree`). Materiales URP `Mat_` en `Assets/Art/Materials/`.
+**Naming:** `Prop_<Biome>_<Name>`. Sustituir llamadas de `EnvironmentKit` por `Instantiate(prefab)` sin tocar gameplay (leaks, regions, quests).
 
-El generador de Demo_10min sigue creando un greybox lineal con materiales URP.
+## Cómo regenerar
+
+1. Abrir `World_Main.unity` vacío → Play, o
+2. Menú **NullBorn → Build World Main**

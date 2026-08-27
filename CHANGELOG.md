@@ -7,9 +7,10 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/), y 
 ## [Unreleased]
 
 ### Added
-- **Fases 0–9 implementadas** (plan [`docs/WORLD_RPG_PLAN.md`](docs/WORLD_RPG_PLAN.md)): docs + combate 0b, overworld greybox, bootstrap/regiones, combate en mundo, progresión/save, quests/diálogo, inventario/economía, dungeons/boss, fast travel/polish, API mock/stub.
+- **Entorno procedural “vivo”:** `EnvironmentKit` + `ProceduralTextures` — terreno continuo, árboles, edificios, antenas, farolas, rocas, caminos/puentes, skybox cubemap y suelos texturizados por bioma (sin Asset Store).
+- **Fases 0–9 implementadas** (plan [`docs/WORLD_RPG_PLAN.md`](docs/WORLD_RPG_PLAN.md)): docs + combate 0b, overworld, bootstrap/regiones, combate en mundo, progresión/save, quests/diálogo, inventario/economía, dungeons/boss, fast travel/polish, API mock/stub.
 - **Fase 0b combate:** sprint, dash con i-frames, buffer de input, `TraceCutCombo` (L-L-H), `PurgeWaveAbility`, `RestoreAbility`, `LockOnController`, `CombatFeedback` (hitstop/flash/shake/SFX), `PlayerAnimBridge` procedural, escena `Combat_Arena`.
-- **Mundo:** `World_Main` greybox (Runtime Plaza + Heap / Stack / I/O / Kernel), `WorldBootstrap`, `RegionTrigger`, `RegionDefinition`, `WorldLayoutBuilder`.
+- **Mundo:** `World_Main` Ciudad-Runtime (Runtime Plaza + Heap / Stack / I/O / Kernel), `WorldBootstrap`, `RegionTrigger`, `RegionDefinition`, `WorldLayoutBuilder`.
 - **RPG:** `PlayerProgression`, `QuestManager` (6 tickets), `DialogueRunner`, 4 NPCs, `Inventory`, `Shop`, `CpuCredits`.
 - **Persistencia:** `SaveManager` JSON local; F5/F9; auto-save en terminales.
 - **Dungeons:** portales aditivos + greybox in-world Heap Cave / Stack Chasm; Kernel Gate boss.
@@ -20,6 +21,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/), y 
 - Plan de pivot [`docs/WORLD_RPG_PLAN.md`](docs/WORLD_RPG_PLAN.md).
 
 ### Changed
+- `WorldLayoutBuilder` deja las islas-plataforma greybox: mapa continuo con biomas conectados por caminos.
 - HUD: etiquetas **Vitalidad / Energía**; objetivo de combate; overlays de quest/RAM/inventario.
 - `MemoryLeakEnemy`: FSM Idle → Telegraph → Attack → Recover; drain pasivo reducido; variante `NullRef`.
 - `Demo_10min` conserva GC en E/G; gana combo/dash si el bootstrap añade el kit v2.

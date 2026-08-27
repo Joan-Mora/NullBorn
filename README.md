@@ -19,7 +19,7 @@
 ## Cómo jugar
 
 1. Abre esta carpeta en **Unity Hub** con Unity **6000.5.9f1**.
-2. **Mundo:** abre `Assets/Scenes/World_Main.unity` y pulsa **Play ►** (el greybox se construye solo si la escena está vacía). Opcional: **NullBorn → Build World Main** para persistir props en Scene View.
+2. **Mundo:** abre `Assets/Scenes/World_Main.unity` y pulsa **Play ►** (terreno, árboles, edificios y biomas se generan solos si la escena está vacía). Opcional: **NullBorn → Build World Main**.
 3. **Arena de combate (Fase 0b):** `Assets/Scenes/Combat_Arena.unity` o **NullBorn → Build Combat Arena**.
 4. **Demo legacy:** **NullBorn → Generar Demo 10min** → `Demo_10min.unity`.
 5. Haz **click en la ventana Game** para capturar el mouse.

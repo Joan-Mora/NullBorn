@@ -54,7 +54,9 @@ Escenas vacías se **autogeneran en Play** (`SceneAutoBuilder`) si no hay `Playe
 | `SimpleBobAnim` | Bob idle placeholder |
 | `WorldZoneSign` | Cartel 3D |
 | `GcPulseVfx` / `CombatVfx` | Pulsos de GC / Purga / Restaurar |
-| `RuntimeMaterials` | Lit URP en runtime |
+| `RuntimeMaterials` | Lit / Textured URP en runtime |
+| `ProceduralTextures` | Noise, grid y skybox cubemap runtime |
+| `EnvironmentKit` | Terreno, árboles, edificios, antenas, caminos, farolas |
 
 ### Editor (`Assets/Editor/`)
 
