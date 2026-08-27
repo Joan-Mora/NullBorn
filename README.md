@@ -4,7 +4,7 @@
 
 ## Estado
 
-**Open World RPG en desarrollo** (fases 0–9 del plan). Escena principal: `World_Main`. Arena de combate: `Combat_Arena`. El vertical slice **Demo_10min** se conserva como *Simulación de arranque (legacy)*.
+**Open World RPG en desarrollo** — **fases 0–9 implementadas** (plan [`docs/WORLD_RPG_PLAN.md`](docs/WORLD_RPG_PLAN.md); polish/backend real pendientes). Escena principal: `World_Main`. Arena de combate: `Combat_Arena`. El vertical slice **Demo_10min** se conserva como *Simulación de arranque (legacy)*.
 
 **Diseño:** [`docs/GDD_v2.md`](docs/GDD_v2.md) · **Plan:** [`docs/WORLD_RPG_PLAN.md`](docs/WORLD_RPG_PLAN.md) · **Legacy:** [`docs/GDD_v1.md`](docs/GDD_v1.md)
 

@@ -23,6 +23,7 @@ Recordings/
 *.opendb
 *.VC.db
 *.log
+compile_log.txt
 sysinfo.txt
 Captures/
 Builds/

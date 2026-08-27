@@ -2,6 +2,8 @@
 
 Documento de arquitectura Unity 6 + URP. Visión creativa: [`docs/GDD_v2.md`](docs/GDD_v2.md). Slice legacy: [`docs/GDD_v1.md`](docs/GDD_v1.md) y **Demo_10min**. Plan de mundo: [`docs/WORLD_RPG_PLAN.md`](docs/WORLD_RPG_PLAN.md). Complementa [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md).
 
+**Estado:** fases **0–9** del plan open-world RPG están implementadas en código (greybox + combate 0b + RPG + save + API mock). PostgreSQL / REST real siguen pendientes.
+
 ## Visión general
 
 ```

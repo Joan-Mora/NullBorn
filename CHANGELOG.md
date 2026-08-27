@@ -7,6 +7,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/), y 
 ## [Unreleased]
 
 ### Added
+- **Fases 0–9 implementadas** (plan [`docs/WORLD_RPG_PLAN.md`](docs/WORLD_RPG_PLAN.md)): docs + combate 0b, overworld greybox, bootstrap/regiones, combate en mundo, progresión/save, quests/diálogo, inventario/economía, dungeons/boss, fast travel/polish, API mock/stub.
 - **Fase 0b combate:** sprint, dash con i-frames, buffer de input, `TraceCutCombo` (L-L-H), `PurgeWaveAbility`, `RestoreAbility`, `LockOnController`, `CombatFeedback` (hitstop/flash/shake/SFX), `PlayerAnimBridge` procedural, escena `Combat_Arena`.
 - **Mundo:** `World_Main` greybox (Runtime Plaza + Heap / Stack / I/O / Kernel), `WorldBootstrap`, `RegionTrigger`, `RegionDefinition`, `WorldLayoutBuilder`.
 - **RPG:** `PlayerProgression`, `QuestManager` (6 tickets), `DialogueRunner`, 4 NPCs, `Inventory`, `Shop`, `CpuCredits`.
