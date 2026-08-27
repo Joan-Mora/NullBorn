@@ -9,6 +9,7 @@ using NullBorn.RPG.Quest;
 using NullBorn.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using PlayerInventory = NullBorn.RPG.Inventory.Inventory;
 
 namespace NullBorn.World
 {
@@ -113,7 +114,7 @@ namespace NullBorn.World
                 save.TryLoad();
             }
 
-            leaks = FindObjectsByType<MemoryLeakEnemy>(FindObjectsSortMode.None);
+            leaks = FindObjectsByType<MemoryLeakEnemy>();
             foreach (MemoryLeakEnemy leak in leaks)
             {
                 Renderer rend = leak.GetComponentInChildren<Renderer>();
@@ -154,7 +155,7 @@ namespace NullBorn.World
                 return;
             }
 
-            leaks = FindObjectsByType<MemoryLeakEnemy>(FindObjectsSortMode.None);
+            leaks = FindObjectsByType<MemoryLeakEnemy>();
             MemoryLeakEnemy nearest = null;
             float best = 80f;
             foreach (MemoryLeakEnemy leak in leaks)
@@ -181,7 +182,7 @@ namespace NullBorn.World
             CpuCredits credits = CpuCredits.Instance;
             PlayerProgression prog = PlayerProgression.Instance;
             hud.SetRpgStats(prog != null ? prog.Level : 1, prog != null ? prog.XpNormalized : 0f, credits != null ? credits.Amount : 0);
-            Inventory inv = Inventory.Instance;
+            PlayerInventory inv = PlayerInventory.Instance;
             hud.SetInventoryPanel(inv != null && inv.PanelOpen ? inv.PanelText() : string.Empty);
         }
     }

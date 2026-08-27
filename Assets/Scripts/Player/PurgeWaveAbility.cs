@@ -105,7 +105,7 @@ namespace NullBorn.Player
 
         private void ChainCleanFragments(float chainRadius)
         {
-            MemoryFragment[] all = FindObjectsByType<MemoryFragment>(FindObjectsSortMode.None);
+            MemoryFragment[] all = FindObjectsByType<MemoryFragment>();
             for (int i = 0; i < all.Length; i++)
             {
                 if (all[i] == null) continue;

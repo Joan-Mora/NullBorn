@@ -41,7 +41,7 @@ namespace NullBorn.Player
         private void Acquire()
         {
             Camera cam = Camera.main;
-            MemoryLeakEnemy[] leaks = FindObjectsByType<MemoryLeakEnemy>(FindObjectsSortMode.None);
+            MemoryLeakEnemy[] leaks = FindObjectsByType<MemoryLeakEnemy>();
             MemoryLeakEnemy best = null;
             float bestScore = float.MaxValue;
 

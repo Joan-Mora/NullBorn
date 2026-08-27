@@ -27,6 +27,9 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/), y 
 - **`docs/REQUIREMENTS.md`** — RF-07/13/15/17–20 y RF-21–24 actualizados.
 
 ### Fixed
+- CS0118: `Shop` trataba el namespace `NullBorn.RPG.Inventory` como tipo; alias `PlayerInventory` en consumidores.
+- CS1503: `WorldLayoutBuilder.SpawnLeak` recibía `GameObject` donde espera `Transform` (se pasa `.transform`).
+- API Unity 6.5: `FindObjectsByType<T>(FindObjectsSortMode.None)` sustituido por `FindObjectsByType<T>()`.
 - CS0246: `PlayerProgression` y `ThirdPersonController` no importaban `NullBorn.Core` (`SystemIntegrity`, `CpuCycles`).
 - GUID inválido en `SimpleBobAnim.cs.meta` (Unity ignoraba el script → error CS0246 en compilación).
 - Multiplicación inválida `Vector3 * (float, float, float)` en `LeakAvatarBuilder.CreateSpike` (corregido con `new Vector3(...)`).

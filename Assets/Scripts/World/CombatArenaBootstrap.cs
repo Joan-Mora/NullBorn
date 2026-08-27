@@ -75,7 +75,7 @@ namespace NullBorn.World
             Checkpoint start = GameObject.Find("Checkpoint_Arena")?.GetComponent<Checkpoint>();
             if (start != null) checkpoints?.SetCheckpoint(start);
 
-            MemoryLeakEnemy[] leaks = FindObjectsByType<MemoryLeakEnemy>(FindObjectsSortMode.None);
+            MemoryLeakEnemy[] leaks = FindObjectsByType<MemoryLeakEnemy>();
             foreach (MemoryLeakEnemy leak in leaks)
             {
                 Renderer rend = leak.GetComponentInChildren<Renderer>();
@@ -88,7 +88,7 @@ namespace NullBorn.World
             if (hud == null || playerTransform == null) return;
             MemoryLeakEnemy nearest = null;
             float best = 40f;
-            MemoryLeakEnemy[] leaks = FindObjectsByType<MemoryLeakEnemy>(FindObjectsSortMode.None);
+            MemoryLeakEnemy[] leaks = FindObjectsByType<MemoryLeakEnemy>();
             foreach (MemoryLeakEnemy leak in leaks)
             {
                 if (leak == null || !leak.IsAlive) continue;

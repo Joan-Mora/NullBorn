@@ -24,7 +24,7 @@ namespace NullBorn.World
             timer = 0f;
 
             if (leakMat == null) return;
-            MemoryLeakEnemy[] alive = FindObjectsByType<MemoryLeakEnemy>(FindObjectsSortMode.None);
+            MemoryLeakEnemy[] alive = FindObjectsByType<MemoryLeakEnemy>();
             if (alive.Length >= maxAlive) return;
 
             Transform player = GameObject.Find("Player_Thread")?.transform;

@@ -31,14 +31,14 @@ namespace NullBorn.Core
         private void Update()
         {
             float units = 0f;
-            MemoryLeakEnemy[] leaks = FindObjectsByType<MemoryLeakEnemy>(FindObjectsSortMode.None);
+            MemoryLeakEnemy[] leaks = FindObjectsByType<MemoryLeakEnemy>();
             for (int i = 0; i < leaks.Length; i++)
             {
                 if (leaks[i] == null || !leaks[i].IsAlive) continue;
                 units += leaks[i].Variant == LeakVariant.Boss ? 8f : leaks[i].Variant == LeakVariant.Spawner ? 4f : 2f;
             }
 
-            MemoryFragment[] frags = FindObjectsByType<MemoryFragment>(FindObjectsSortMode.None);
+            MemoryFragment[] frags = FindObjectsByType<MemoryFragment>();
             units += frags.Length;
 
             Normalized = maxRamUnits <= 0f ? 0f : Mathf.Clamp01(units / maxRamUnits);

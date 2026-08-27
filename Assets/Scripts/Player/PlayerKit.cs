@@ -3,6 +3,7 @@ using NullBorn.Core;
 using NullBorn.RPG.Economy;
 using NullBorn.RPG.Inventory;
 using UnityEngine;
+using PlayerInventory = NullBorn.RPG.Inventory.Inventory;
 
 namespace NullBorn.Player
 {
@@ -52,7 +53,7 @@ namespace NullBorn.Player
             if (loadout == PlayerLoadout.WorldRPG)
             {
                 player.AddComponent<PlayerProgression>();
-                player.AddComponent<Inventory>();
+                player.AddComponent<PlayerInventory>();
                 player.AddComponent<CpuCredits>();
             }
 

@@ -68,9 +68,9 @@ namespace NullBorn.World
                 new Color(0.4f, 0.22f, 0.32f), new Color(0.12f, 0.04f, 0.08f), 0.01f, 0.2f);
             MakeRegion("Region_Heap", heap, new Vector3(0f, 2f, 70f), new Vector3(52f, 8f, 50f), cpHeap, "poi_heap", root);
             MakeTerminal("ft_heap", "Heap", new Vector3(6f, 0.6f, 52f), matMag, root);
-            SpawnLeak("Leak_Heap_A", new Vector3(-6f, 1.15f, 62f), LeakVariant.Basic, matLeak, root);
-            SpawnLeak("Leak_Heap_B", new Vector3(5f, 1.15f, 74f), LeakVariant.Basic, matLeak, root);
-            SpawnLeak("Leak_Heap_C", new Vector3(-2f, 1.2f, 84f), LeakVariant.Spawner, matLeak, root);
+            SpawnLeak("Leak_Heap_A", new Vector3(-6f, 1.15f, 62f), LeakVariant.Basic, matLeak, root.transform);
+            SpawnLeak("Leak_Heap_B", new Vector3(5f, 1.15f, 74f), LeakVariant.Basic, matLeak, root.transform);
+            SpawnLeak("Leak_Heap_C", new Vector3(-2f, 1.2f, 84f), LeakVariant.Spawner, matLeak, root.transform);
             MakePortal("Portal_HeapCave", "Dungeon_HeapCave", "Heap Cave", new Vector3(-8f, 1.5f, 90f), false, matMag, root);
             DungeonLayoutBuilder.BuildInline("Dungeon_HeapCave", new Vector3(-8f, 0f, 102f), root);
 
@@ -88,8 +88,8 @@ namespace NullBorn.World
                 new Color(0.28f, 0.36f, 0.48f), new Color(0.05f, 0.08f, 0.14f), 0.008f, 0.1f);
             MakeRegion("Region_Stack", stack, new Vector3(-70f, 4f, 22f), new Vector3(48f, 12f, 46f), cpStack, null, root);
             MakeTerminal("ft_stack", "Stack", new Vector3(-52f, 2.6f, 14f), matCyan, root);
-            SpawnLeak("Leak_Stack_A", new Vector3(-68f, 3.2f, 24f), LeakVariant.Spawner, matLeak, root);
-            SpawnLeak("Leak_Stack_B", new Vector3(-76f, 3.2f, 32f), LeakVariant.NullRef, matLeak, root);
+            SpawnLeak("Leak_Stack_A", new Vector3(-68f, 3.2f, 24f), LeakVariant.Spawner, matLeak, root.transform);
+            SpawnLeak("Leak_Stack_B", new Vector3(-76f, 3.2f, 32f), LeakVariant.NullRef, matLeak, root.transform);
             MakePortal("Portal_StackChasm", "Dungeon_StackChasm", "Stack Chasm", new Vector3(-88f, 3.5f, 36f), false, matCyan, root);
             DungeonLayoutBuilder.BuildInline("Dungeon_StackChasm", new Vector3(-96f, 2f, 48f), root);
 
@@ -103,7 +103,7 @@ namespace NullBorn.World
                 new Color(0.42f, 0.34f, 0.22f), new Color(0.14f, 0.1f, 0.05f), 0.007f, 0.05f);
             MakeRegion("Region_IO", io, new Vector3(70f, 2f, 20f), new Vector3(50f, 8f, 48f), cpIo, "poi_io_tower", root);
             MakeTerminal("ft_io", "I/O", new Vector3(58f, 0.6f, 12f), matShop, root);
-            SpawnLeak("Leak_IO_A", new Vector3(74f, 1.15f, 26f), LeakVariant.Basic, matLeak, root);
+            SpawnLeak("Leak_IO_A", new Vector3(74f, 1.15f, 26f), LeakVariant.Basic, matLeak, root.transform);
 
             // Kernel Heights +Z far
             Floor("Floor_Kernel", new Vector3(0f, 4f, 150f), new Vector3(4.5f, 1f, 4.2f), matKernel, root);
@@ -115,7 +115,7 @@ namespace NullBorn.World
                 new Color(0.28f, 0.18f, 0.4f), new Color(0.08f, 0.02f, 0.12f), 0.012f, 0.3f);
             MakeRegion("Region_Kernel", kernel, new Vector3(0f, 6f, 150f), new Vector3(42f, 12f, 44f), cpKernel, null, root);
             MakePortal("Portal_KernelGate", "KernelGate", "Kernel Gate", new Vector3(0f, 5.5f, 142f), true, matBoss, root);
-            SpawnLeak("Leak_Boss_Kernel", new Vector3(0f, 5.6f, 155f), LeakVariant.Boss, matBoss, root, true);
+            SpawnLeak("Leak_Boss_Kernel", new Vector3(0f, 5.6f, 155f), LeakVariant.Boss, matBoss, root.transform, true);
 
             GameObject player = PlayerKit.Create(new Vector3(0f, 1.1f, -4f), matPlayer, matCore, PlayerLoadout.WorldRPG);
             player.transform.SetParent(root.transform, true);

@@ -6,6 +6,7 @@ using NullBorn.RPG.Inventory;
 using NullBorn.RPG.Quest;
 using NullBorn.World;
 using UnityEngine;
+using PlayerInventory = NullBorn.RPG.Inventory.Inventory;
 
 namespace NullBorn.Persistence
 {
@@ -51,7 +52,7 @@ namespace NullBorn.Persistence
             CpuCycles cpu = player.GetComponent<CpuCycles>();
             PlayerProgression prog = player.GetComponent<PlayerProgression>();
             CpuCredits credits = player.GetComponent<CpuCredits>();
-            Inventory inv = player.GetComponent<Inventory>();
+            PlayerInventory inv = player.GetComponent<PlayerInventory>();
 
             SaveData data = new SaveData
             {
@@ -98,7 +99,7 @@ namespace NullBorn.Persistence
             player.GetComponent<SystemIntegrity>()?.SetCurrentIntegrity(data.integrity);
             player.GetComponent<CpuCycles>()?.SetCurrentCycles(data.cpu);
             player.GetComponent<CpuCredits>()?.SetAmount(data.credits);
-            player.GetComponent<Inventory>()?.FromSave(data.items);
+            player.GetComponent<PlayerInventory>()?.FromSave(data.items);
             QuestManager.Instance?.FromSave(data.quests, data.completedQuests);
             WorldMapController.Instance?.RestoreUnlocks(data.unlockedTerminals);
         }

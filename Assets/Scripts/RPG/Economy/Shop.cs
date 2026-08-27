@@ -2,6 +2,7 @@ using NullBorn.Player;
 using NullBorn.RPG.Inventory;
 using NullBorn.World;
 using UnityEngine;
+using PlayerInventory = NullBorn.RPG.Inventory.Inventory;
 
 namespace NullBorn.RPG.Economy
 {
@@ -54,7 +55,7 @@ namespace NullBorn.RPG.Economy
             if (index < 0 || index >= stock.Length || stock[index] == null) return;
             ItemDefinition item = stock[index];
             CpuCredits credits = CpuCredits.Instance ?? FindAnyObjectByType<CpuCredits>();
-            Inventory inv = Inventory.Instance ?? FindAnyObjectByType<Inventory>();
+            PlayerInventory inv = PlayerInventory.Instance ?? FindAnyObjectByType<PlayerInventory>();
             if (credits == null || inv == null) return;
             if (!credits.TrySpend(item.price))
             {
