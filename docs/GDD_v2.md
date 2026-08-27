@@ -2,7 +2,7 @@
 
 **Versión:** 2.0 (borrador aprobado para pivot)  
 **Fecha:** 2026-08-26  
-**Estado:** Visión creativa + mecánicas — **sin implementación Unity en esta fase**  
+**Estado:** Visión creativa + mecánicas — **implementación Unity en curso** (Fase 0b+ según [`WORLD_RPG_PLAN.md`](WORLD_RPG_PLAN.md))  
 **Reemplaza:** [`GDD_v1.md`](GDD_v1.md) como documento de diseño principal. v0/v1 se conservan como referencia del vertical slice legacy.
 
 ---

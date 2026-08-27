@@ -1,5 +1,7 @@
 # GDD v1 — NullBorn Mini-Demo (~10 min)
 
+> **Superseded by [`GDD_v2.md`](GDD_v2.md)** for world scope, combat feel and the open-world RPG pivot. This document is **retained as reference** for the linear **Demo_10min** vertical slice (Boot → Heap → Kernel), Art Bible and original isomorphism table. Do not treat v1 as the live design target.
+
 ## Visión
 Action-RPG 3D en tercera persona. El jugador es un **Thread** que estabiliza un sistema operativo corrupto gestionando **ciclos de CPU** y ejecutando **Garbage Collection**. Aprendizaje por isomorfismo lúdico (sin quizzes).
 

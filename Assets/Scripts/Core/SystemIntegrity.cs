@@ -17,6 +17,13 @@ namespace NullBorn.Core
         public float Normalized => maxIntegrity <= 0f ? 0f : currentIntegrity / maxIntegrity;
         public bool IsCollapsed => currentIntegrity <= 0f;
 
+        public void SetMaxIntegrity(float max, bool refill = false)
+        {
+            float ratio = Normalized;
+            maxIntegrity = Mathf.Max(1f, max);
+            currentIntegrity = refill ? maxIntegrity : Mathf.Clamp(maxIntegrity * ratio, 0f, maxIntegrity);
+        }
+
         public void Damage(float amount)
         {
             if (amount <= 0f || IsCollapsed) return;
@@ -32,6 +39,11 @@ namespace NullBorn.Core
         public void ResetIntegrity()
         {
             currentIntegrity = maxIntegrity;
+        }
+
+        public void SetCurrentIntegrity(float value)
+        {
+            currentIntegrity = Mathf.Clamp(value, 0f, maxIntegrity);
         }
     }
 }

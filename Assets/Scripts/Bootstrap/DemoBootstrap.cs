@@ -99,6 +99,12 @@ namespace NullBorn.Bootstrap
             movement.Initialize(mainCam.transform);
             gc.Initialize(cpu, integrity, session);
             strike.Initialize(cpu, session);
+            if (player.GetComponent<PlayerAnimBridge>() == null) player.AddComponent<PlayerAnimBridge>();
+            if (player.GetComponent<LockOnController>() == null) player.AddComponent<LockOnController>();
+            if (player.GetComponent<CombatFeedback>() == null) player.AddComponent<CombatFeedback>();
+            if (player.GetComponent<TraceCutCombo>() == null) player.AddComponent<TraceCutCombo>();
+            player.GetComponent<TraceCutCombo>()?.Initialize(cpu, session);
+            player.GetComponent<CombatFeedback>()?.BindCamera(orbit);
             session.Bind(integrity);
             checkpoints.RegisterPlayer(player.transform, integrity, cpu);
 

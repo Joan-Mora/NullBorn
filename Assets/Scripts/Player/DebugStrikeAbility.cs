@@ -24,8 +24,23 @@ namespace NullBorn.Player
             session = gameSession;
         }
 
+        private void Awake()
+        {
+            if (GetComponent<TraceCutCombo>() != null)
+            {
+                enabled = false;
+                return;
+            }
+        }
+
         private void Update()
         {
+            if (GetComponent<TraceCutCombo>() != null)
+            {
+                enabled = false;
+                return;
+            }
+
             if (session != null && session.CurrentState != GameSession.State.Playing) return;
 
             if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.F))

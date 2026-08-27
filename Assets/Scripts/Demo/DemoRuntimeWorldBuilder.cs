@@ -119,6 +119,9 @@ namespace NullBorn.Demo
             player.AddComponent<SystemIntegrity>();
             player.AddComponent<CpuCycles>();
             player.AddComponent<ThirdPersonController>();
+            player.AddComponent<TraceCutCombo>();
+            player.AddComponent<CombatFeedback>();
+            player.AddComponent<LockOnController>();
             player.AddComponent<GarbageCollectionAbility>();
             player.AddComponent<DebugStrikeAbility>();
             player.AddComponent<PlayerAnimBridge>();

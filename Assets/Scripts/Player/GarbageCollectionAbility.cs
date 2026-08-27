@@ -27,14 +27,20 @@ namespace NullBorn.Player
             session = gameSession;
         }
 
+        private void Awake()
+        {
+            if (GetComponent<PurgeWaveAbility>() != null) enabled = false;
+        }
+
         private void Update()
         {
             if (session != null && session.CurrentState != GameSession.State.Playing) return;
 
-            if (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.G))
-            {
-                TryRunGarbageCollection();
-            }
+            bool interactPresent = GetComponent<PlayerInteract>() != null;
+            bool pressed = Input.GetKeyDown(KeyCode.G) || (!interactPresent && Input.GetKeyDown(KeyCode.E));
+            if (!pressed) return;
+
+            TryRunGarbageCollection();
         }
 
         private void TryRunGarbageCollection()
@@ -67,6 +73,7 @@ namespace NullBorn.Player
 
             integrity.Restore(restoreIntegrity + cleaned * 2f);
             NullBorn.Art.GcPulseVfx.Play(transform.position, radius);
+            NullBorn.Api.NullBornApi.Current?.RecordGcEvent("garbage_collection", cleaned, leakDamage);
             Debug.Log($"GC ejecutado. Fragmentos liberados: {cleaned}");
         }
     }

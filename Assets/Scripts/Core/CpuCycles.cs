@@ -17,6 +17,27 @@ namespace NullBorn.Core
         public float MaxCycles => maxCycles;
         public float CurrentCycles => currentCycles;
         public float Normalized => maxCycles <= 0f ? 0f : currentCycles / maxCycles;
+        public float RegenPerSecond => regenPerSecond;
+
+        public bool CanAfford(float cost) => cost <= 0f || currentCycles >= cost;
+
+        public void Restore(float amount)
+        {
+            if (amount <= 0f) return;
+            currentCycles = Mathf.Min(maxCycles, currentCycles + amount);
+        }
+
+        public void SetMaxCycles(float max, bool refill = false)
+        {
+            float ratio = Normalized;
+            maxCycles = Mathf.Max(1f, max);
+            currentCycles = refill ? maxCycles : Mathf.Clamp(maxCycles * ratio, 0f, maxCycles);
+        }
+
+        public void SetRegen(float perSecond)
+        {
+            regenPerSecond = Mathf.Max(0f, perSecond);
+        }
 
         private void Update()
         {
@@ -41,6 +62,11 @@ namespace NullBorn.Core
         public void ResetCycles()
         {
             currentCycles = maxCycles;
+        }
+
+        public void SetCurrentCycles(float value)
+        {
+            currentCycles = Mathf.Clamp(value, 0f, maxCycles);
         }
     }
 }

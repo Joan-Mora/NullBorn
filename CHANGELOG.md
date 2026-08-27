@@ -6,6 +6,25 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/), y 
 
 ## [Unreleased]
 
+### Added
+- **Fase 0b combate:** sprint, dash con i-frames, buffer de input, `TraceCutCombo` (L-L-H), `PurgeWaveAbility`, `RestoreAbility`, `LockOnController`, `CombatFeedback` (hitstop/flash/shake/SFX), `PlayerAnimBridge` procedural, escena `Combat_Arena`.
+- **Mundo:** `World_Main` greybox (Runtime Plaza + Heap / Stack / I/O / Kernel), `WorldBootstrap`, `RegionTrigger`, `RegionDefinition`, `WorldLayoutBuilder`.
+- **RPG:** `PlayerProgression`, `QuestManager` (6 tickets), `DialogueRunner`, 4 NPCs, `Inventory`, `Shop`, `CpuCredits`.
+- **Persistencia:** `SaveManager` JSON local; F5/F9; auto-save en terminales.
+- **Dungeons:** portales aditivos + greybox in-world Heap Cave / Stack Chasm; Kernel Gate boss.
+- **Fast travel + minimapa stub** y barra `RamPressure` (RF-07/15).
+- **API stub:** `INullBornApi` + `MockNullBornApi` + `NullBornApiClient` (RF-17–20 parcial).
+- Menús editor **NullBorn → Build Combat Arena / Build World Main / Build Dungeon Scenes**.
+- **`docs/GDD_v2.md`** — visión Guardián del Runtime.
+- Plan de pivot [`docs/WORLD_RPG_PLAN.md`](docs/WORLD_RPG_PLAN.md).
+
+### Changed
+- HUD: etiquetas **Vitalidad / Energía**; objetivo de combate; overlays de quest/RAM/inventario.
+- `MemoryLeakEnemy`: FSM Idle → Telegraph → Attack → Recover; drain pasivo reducido; variante `NullRef`.
+- `Demo_10min` conserva GC en E/G; gana combo/dash si el bootstrap añade el kit v2.
+- **`docs/GDD_v1.md`** marcado como superseded por GDD v2.
+- **`docs/REQUIREMENTS.md`** — RF-07/13/15/17–20 y RF-21–24 actualizados.
+
 ### Fixed
 - GUID inválido en `SimpleBobAnim.cs.meta` (Unity ignoraba el script → error CS0246 en compilación).
 - Multiplicación inválida `Vector3 * (float, float, float)` en `LeakAvatarBuilder.CreateSpike` (corregido con `new Vector3(...)`).
@@ -13,18 +32,6 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/), y 
 - HUD Canvas con texto vertical ilegible (RectTransform, CanvasScaler, overflow).
 - Barra de leak mostrando **LEAK BOSS** en Boot Sector antes de llegar al Kernel.
 - Carteles de zona y siluetas placeholder más legibles.
-
-### Added
-- **`docs/GDD_v2.md`** — Visión creativa reimaginada: Guardián del Runtime, combate legible (Corte de Traza, Onda de Purga, Restaurar), auditoría honesta del PoC, requisitos de animación, referencias Hades/Zelda/Souls-lite.
-- Plan de pivot a **open world RPG**: [`docs/WORLD_RPG_PLAN.md`](docs/WORLD_RPG_PLAN.md) — hoja de ruta hub + biomas, quests, save local y arquitectura `World/` / `RPG/` / `Persistence/`.
-- `SimpleBobAnim.cs` como script independiente.
-- `WorldZoneSign` para señalización 3D de zonas.
-- Documentación: `ARCHITECTURE.md`, `SECURITY.md`, `docs/REQUIREMENTS.md`.
-
-### Changed
-- **`README.md`** y **`ARCHITECTURE.md`** — Sincronizados con GDD v2: identidad Guardián de Runtime, combate legible primero, Fase 0b bloqueante, sistemas de combate planificados en roadmap.
-- **`docs/WORLD_RPG_PLAN.md` v1.1** — Corregida afirmación falsa de “combate sólido”; inventario baseline honesto; **Fase 0b (fundación game feel)** como bloqueante antes del mundo abierto; alineado con GDD v2.
-- Requisitos RQF/RQNF movidos de `.pptx` a [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md); archivos `.pptx` eliminados del repo y añadidos a `.gitignore`.
 
 ## [0.2.0] — 2026-08-26
 

@@ -1,167 +1,155 @@
 # Arquitectura — NullBorn
 
-Documento de arquitectura del vertical slice Unity. La visión creativa y mecánica objetivo están en [`docs/GDD_v2.md`](docs/GDD_v2.md); [`docs/GDD_v1.md`](docs/GDD_v1.md) y **Demo_10min** documentan el slice legacy. Complementa [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md).
+Documento de arquitectura Unity 6 + URP. Visión creativa: [`docs/GDD_v2.md`](docs/GDD_v2.md). Slice legacy: [`docs/GDD_v1.md`](docs/GDD_v1.md) y **Demo_10min**. Plan de mundo: [`docs/WORLD_RPG_PLAN.md`](docs/WORLD_RPG_PLAN.md). Complementa [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md).
 
 ## Visión general
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     Demo_10min.unity                        │
+│  World_Main.unity  (overworld)     Combat_Arena.unity (0b)  │
+│  Demo_10min.unity  (legacy tutorial embebido)               │
 │  ┌──────────────┐  ┌─────────────┐  ┌─────────────────────┐ │
-│  │ Player_Thread│  │ GameSystems │  │ Zona + Enemigos     │ │
-│  │ + cámara     │  │ bootstrap   │  │ triggers/checkpoints│ │
+│  │ Player_Thread│  │ GameSystems │  │ Regiones / NPCs     │ │
+│  │ combate v2   │  │ bootstrap   │  │ quests / dungeons   │ │
 │  └──────┬───────┘  └──────┬──────┘  └──────────┬──────────┘ │
-│         │                 │                     │           │
 │         └─────────────────┼─────────────────────┘           │
 │                           ▼                                 │
-│              Loop de juego (Update, triggers, UI)           │
+│         Save JSON local  +  INullBornApi (mock)             │
 └─────────────────────────────────────────────────────────────┘
                            │
-              (roadmap)    ▼
-                   API REST → PostgreSQL OLTP
+              (Fase 9)     ▼
+                   REST real → PostgreSQL OLTP (pendiente)
 ```
+
+Escenas vacías se **autogeneran en Play** (`SceneAutoBuilder`) si no hay `Player_Thread`. En editor: **NullBorn → Build World Main / Build Combat Arena / Build Dungeon Scenes**.
 
 ## Estructura de carpetas (`Assets/Scripts/`)
 
 | Carpeta | Responsabilidad |
 |---|---|
-| `Bootstrap/` | `DemoBootstrap`, `PrototypeBootstrap` — cableado al iniciar Play |
-| `Core/` | `SystemIntegrity`, `CpuCycles`, `GameSession`, `CheckpointSystem` |
-| `Player/` | Movimiento 3ª persona, habilidades GC y Debug Strike |
-| `Enemies/` | `MemoryLeakEnemy`, `MemoryFragment`, variantes Basic/Spawner/Boss |
-| `Demo/` | Flujo de zonas, tutoriales, triggers |
-| `UI/` | `CanvasHUD` (uGUI runtime) |
-| `Art/` | Avatares procedurales, animación idle, VFX mínimos, carteles de zona (ver abajo) |
+| `Bootstrap/` | `DemoBootstrap`, `PrototypeBootstrap` — demo/prototype |
+| `Core/` | `SystemIntegrity`, `CpuCycles`, `GameSession`, `CheckpointSystem`, `RamPressure` |
+| `Player/` | Movimiento, Corte de Traza, Purga, Restaurar, lock-on, feedback, progresión |
+| `Enemies/` | `MemoryLeakEnemy` FSM, `MemoryFragment`, variantes Goteo/Propagador/Núcleo/NullRef |
+| `World/` | `WorldBootstrap`, regiones, layout procedural, dungeons, fast travel |
+| `RPG/Quest` | `QuestManager`, `QuestDefinition` |
+| `RPG/Dialogue` | `DialogueRunner` |
+| `RPG/Inventory` | Memory Cache |
+| `RPG/Economy` | `CpuCredits`, `Shop` |
+| `NPC/` | `NpcController`, `NpcPatrol` |
+| `Persistence/` | `SaveData`, `LocalSaveProvider`, `SaveManager` |
+| `Api/` | `INullBornApi`, `MockNullBornApi`, `NullBornApiClient` (stub REST) |
+| `Demo/` | Flujo lineal legacy |
+| `UI/` | `CanvasHUD` (Vitalidad/Energía + overlays de mundo) |
+| `Art/` | Avatares, VFX, materiales runtime |
 
 ### Arte procedural (`Assets/Scripts/Art/`)
 
 | Script | Función |
 |---|---|
-| `ThreadAvatarBuilder` | Primitivas URP del jugador (`Visual_ThreadAvatar`); adjunta `SimpleBobAnim` al root visual |
-| `LeakAvatarBuilder` | Esferas + cilindro del leak; escala por variante; adjunta `SimpleBobAnim` |
-| `SimpleBobAnim` | Bob vertical en `Update` sobre avatares placeholder (idle sin Animator) |
-| `WorldZoneSign` | Cartel 3D con nombre de zona |
-| `GcPulseVfx` | Pulso visual al usar Garbage Collection |
-
-Invocado desde `BuildDemo10MinScene` al generar prefabs y al instanciar avatares en Play. Los prefabs referencian `SimpleBobAnim` por GUID del `.meta`; si el GUID cambia, hay que actualizar prefabs y `Demo_10min.unity`.
+| `ThreadAvatarBuilder` | Primitivas URP del jugador + `SimpleBobAnim` |
+| `LeakAvatarBuilder` | Esferas del leak |
+| `SimpleBobAnim` | Bob idle placeholder |
+| `WorldZoneSign` | Cartel 3D |
+| `GcPulseVfx` / `CombatVfx` | Pulsos de GC / Purga / Restaurar |
+| `RuntimeMaterials` | Lit URP en runtime |
 
 ### Editor (`Assets/Editor/`)
 
 | Script | Función |
 |---|---|
-| `BuildDemo10MinScene.cs` | Genera escena, prefabs y materiales (`NullBorn → Generar Demo 10min`) |
+| `BuildDemo10MinScene.cs` | **NullBorn → Generar Demo 10min** |
+| `BuildCombatArenaScene.cs` | **NullBorn → Build Combat Arena** |
+| `BuildWorldMainScene.cs` | **NullBorn → Build World Main** |
+| `BuildDungeonScenes.cs` | **NullBorn → Build Dungeon Scenes** |
 | `BuildWindowsPlayer.cs` | Build ejecutable Windows |
 | `SetupURP.cs` | Configuración URP inicial |
 
-## Flujo del demo
+## Combate (Fase 0b — implementado)
+
+| Sistema | Clase | Input |
+|---|---|---|
+| Sprint / dash i-frames / buffer | `ThirdPersonController` | Shift / Espacio |
+| Corte de Traza L-L-H | `TraceCutCombo` | Click / F |
+| Onda de Purga | `PurgeWaveAbility` | G |
+| Restaurar | `RestoreAbility` | V |
+| Lock-on | `LockOnController` | Q / click rueda |
+| Hitstop, flash, shake, SFX | `CombatFeedback` | — |
+| Anim Mixamo + punch procedural | `PlayerAnimBridge` | — |
+| Interactuar | `PlayerInteract` | E (solo mundo; demo conserva GC en E/G) |
+
+`DebugStrikeAbility` se desactiva si existe `TraceCutCombo`. `GarbageCollectionAbility` se desactiva si existe `PurgeWaveAbility` (el demo lineal la conserva).
+
+**Enemigo FSM:** Idle → Telegraph → Attack → Recover. Drain pasivo reducido en adds; aura fuerte en Boss ENRAGE.
+
+## Mundo abierto
 
 ```mermaid
 flowchart TD
-    A[Awake: DemoBootstrap.Wire] --> B[GameSession Playing]
-    B --> C{ZoneTrigger}
-    C -->|Boot| D[Tutorial boot_*]
-    C -->|Heap| E[Tutorial heap_tradeoff]
-    C -->|Kernel| F[Tutorial kernel_boss]
-    B --> G[MemoryLeakEnemy drena Integridad]
-    B --> H[GC / Debug consumen CPU]
-    G -->|Integridad = 0| I[Defeat]
-    F --> J[Boss ENRAGE si integridad baja]
-    J -->|Boss muere| K[Victory]
+    A[World_Main Play] --> B[SceneAutoBuilder / WorldLayoutBuilder]
+    B --> C[WorldBootstrap.Wire]
+    C --> D[RegionTrigger]
+    D --> E[HUD región + fog]
+    C --> F[QuestManager tickets]
+    F --> G[NPCs DialogueRunner]
+    G --> H[Dungeons aditivos o greybox in-world]
+    H --> I[Kernel Gate boss]
+    I --> J[Victory + SaveManager]
 ```
 
-### Secuencia de bootstrap (`DemoBootstrap`)
+| Región | Landmark |
+|---|---|
+| Runtime Plaza | Hub, NPCs, tienda, terminal |
+| Heap Wilds | Goteos + Heap Cave |
+| Stack Ridge | Terrazas + Stack Chasm |
+| I/O Wastes | Relay Tower |
+| Kernel Heights | Núcleo Corrupto |
 
-1. Localiza `Player_Thread`, `Main Camera`, `GameSystems`.
-2. Inicializa movimiento, habilidades, cámara y `GameSession`.
-3. Registra checkpoint inicial (`Checkpoint_Boot`).
-4. Inicializa todos los `MemoryLeakEnemy` de escena.
-5. Registra boss en `DemoFlowController`; HUD rastrea el leak **más cercano** (boss solo en Kernel).
+## Persistencia y API (RF-17–20 parcial)
+
+- **Local:** `SaveManager` → JSON en `Application.persistentDataPath` (`nullborn_save.json`). F5 guardar / F9 cargar / auto-save en terminales y quest complete.
+- **API:** `NullBornApi.Current` default = `MockNullBornApi` (in-memory). `NullBornApiClient` es el stub REST (`UnityWebRequest`) para cuando exista backend. **No hay PostgreSQL ni ACID.** EventoGC se registra en el mock al usar GC o Purga.
 
 ## Isomorfismo lúdico
 
 | Mecánica de juego | Clase / sistema | Concepto de software |
 |---|---|---|
-| Integridad del Sistema | `SystemIntegrity` | Estabilidad / HP del OS |
-| Ciclos de CPU | `CpuCycles` | Presupuesto de cómputo |
-| Memory Leak | `MemoryLeakEnemy` | Fuga de memoria (bug) |
-| Memory Fragment | `MemoryFragment` | Bloque RAM no liberado |
-| Garbage Collection (E/G) | `GarbageCollectionAbility` | Recolección de basura |
-| Depurar (Click/F) | `DebugStrikeAbility` | Debugging / eliminar código corrupto |
-| Thread (jugador) | `Player_Thread` | Hilo de ejecución |
-| Boot / Heap / Kernel | `DemoZoneId` | Regiones del proceso |
+| Vitalidad | `SystemIntegrity` | Integridad del sistema |
+| Energía | `CpuCycles` | Ciclos de CPU |
+| Goteo / Propagador / Núcleo | `MemoryLeakEnemy` | Memory leak |
+| Memory Fragment | `MemoryFragment` | RAM no liberada |
+| Onda de Purga | `PurgeWaveAbility` | GC ofensivo |
+| Restaurar | `RestoreAbility` | GC defensivo |
+| Corte de Traza | `TraceCutCombo` | Depuración |
+| Prioridad de Thread | `PlayerProgression` | Prioridad del scheduler |
+| Memory Cache | `Inventory` | Caché limitada |
+| Créditos de CPU | `CpuCredits` | Presupuesto de cómputo |
+| Tickets | `QuestManager` | Issues / bug reports |
+| Fast travel | `FastTravelTerminal` | Migración / socket |
 
-## Escena `Demo_10min`
+## Escenas
 
-| Objeto | Rol |
+| Escena | Rol |
 |---|---|
-| `GameSystems` | Session, checkpoints, flow, tutorial, HUD, bootstrap |
-| `Player_Thread` | CharacterController + stats + avatar visual |
-| `Main Camera` | `ThirdPersonCamera` |
-| `Floor_*` | Suelos temáticos por zona |
-| `Zone_*` | Triggers de progresión + checkpoint |
-| `Tut_*` | Volúmenes de tutorial opcionales |
-| `Leak_*` | Enemigos (Basic, Spawner, Boss) |
-| `Sign_*` | Carteles 3D de zona |
-| `Checkpoint_*` | Puntos de respawn |
-
-### Prefabs (`Assets/Prefabs/`)
-
-- `Characters/Player_Thread.prefab`
-- `Enemies/Leak_Basic.prefab`, `Leak_Spawner.prefab`, `Leak_Boss.prefab`
-
-Generados/actualizados por `BuildDemo10MinScene`.
+| `World_Main` | Overworld principal (greybox procedural) |
+| `Combat_Arena` | Playtest Fase 0b |
+| `Dungeon_HeapCave` / `Dungeon_StackChasm` | Instancias aditivas (fallback in-world si no están baked) |
+| `Demo_10min` | Simulación de arranque (legacy) |
+| `Prototype` | Sandbox mínimo |
 
 ## UI
 
-`CanvasHUD` construye el Canvas en **runtime** (Screen Space Overlay, referencia 1920×1080):
+`CanvasHUD` — Screen Space Overlay 1920×1080:
 
-- Barras: Integridad, CPU, leak activo
-- Zona + tiempo + controles
-- Panel inferior de tutorial
-- Overlay central: pausa / derrota / victoria
-
-## Persistencia (roadmap académico)
-
-El slice actual es **offline**. La arquitectura objetivo del curso:
-
-```
-Unity Client  →  REST API  →  PostgreSQL
-Entidades: Jugador, Sesion, Nivel, ProgresoSesion,
-           TipoBug, InstanciaBug, EventoGC
-```
-
-Ver RF-17 a RF-20 y RNF-08 en [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md).
-
-## Roadmap — open world RPG (planificado)
-
-Pivot documentado en [`docs/WORLD_RPG_PLAN.md`](docs/WORLD_RPG_PLAN.md) y alineado con [`docs/GDD_v2.md`](docs/GDD_v2.md). **Fase 0b (fundación de game feel)** es **bloqueante** antes de terreno open world: el PoC actual no cumple el estándar de combate legible; no ampliar a mundo abierto hasta completarla (criterio: 1 arena, 3 enemigos, 60 s de combate divertido).
-
-### Combate planificado (GDD v2 — sin implementación)
-
-| Sistema | Diseño objetivo |
-|---|---|
-| **Dash** | Esquiva con i-frames (12–18 frames), gasto de Energía, cancelable al final en ataque ligero |
-| **Lock-on** | Soft lock al target centrado; strafe; cámara acorta distancia |
-| **Combo (Corte de Traza)** | L-L-H con hitstop, trail visible, hitbox alineada a animación |
-| **Enemigo FSM** | `MemoryLeakEnemy` → Idle → Telegraph → Attack → Recover → (opcional) Enrage; sin drenaje pasivo global en adds |
-| **Habilidades** | Onda de Purga (AoE ofensivo, cooldown), Restaurar (curación canalizada) — evolución de GC/Debug Strike |
-
-**Sin implementación aún**; carpetas y escenas objetivo del open world:
-
-| Carpeta / escena (futuro) | Responsabilidad planificada |
-|---|---|
-| `Scripts/World/` | Regiones, mapa, spawns ambientales (`RegionTrigger`, `WorldMapController`) |
-| `Scripts/RPG/` | Quests, diálogo, inventario, economía |
-| `Scripts/Persistence/` | Save/load local (`SaveData`, `LocalSaveProvider`) |
-| `Scripts/NPC/` | NPCs con rutinas y patrol |
-| `Assets/Data/` | ScriptableObjects (quests, NPCs, ítems, regiones) |
-| `World_Main.unity` | Overworld principal (reemplaza demo como escena principal en visión) |
-
-`Demo_10min` y el stack actual (`Bootstrap/`, `Core/`, `Demo/`) se mantienen como base reutilizable y tutorial embebido.
+- Barras Vitalidad / Energía / objetivo / RAM (overworld)
+- Quest tracker, créditos, PT, prompt E, diálogo, inventario Tab, minimapa stub
+- Overlay pausa / derrota / victoria
 
 ## Convenciones
 
 - Namespace raíz: `NullBorn.*`
-- Textos de tutorial al jugador: **español**
+- Textos al jugador: **español**
+- Singletons vía `Instance` o `FindAnyObjectByType`
 - Materiales URP en `Assets/Art/Materials/` con prefijo `Mat_`
-- Regenerar escena tras cambios estructurales: **NullBorn → Generar Demo 10min**
+- Regenerar demo: **NullBorn → Generar Demo 10min**
+- Regenerar mundo: **NullBorn → Build World Main**

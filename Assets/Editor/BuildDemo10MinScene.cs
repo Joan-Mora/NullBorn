@@ -330,8 +330,12 @@ namespace NullBorn.EditorTools
             player.AddComponent<SystemIntegrity>();
             player.AddComponent<CpuCycles>();
             player.AddComponent<ThirdPersonController>();
+            player.AddComponent<TraceCutCombo>();
+            player.AddComponent<CombatFeedback>();
+            player.AddComponent<LockOnController>();
             player.AddComponent<GarbageCollectionAbility>();
             player.AddComponent<DebugStrikeAbility>();
+            player.AddComponent<PlayerAnimBridge>();
 
             ThreadAvatarBuilder.Build(player.transform, body, core);
             return player;
