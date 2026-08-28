@@ -5,7 +5,7 @@ Copia del proyecto Unity **antes del reset stylized** (commit `5466f45`).
 ## Cómo abrir
 
 1. Unity Hub → **Add** → selecciona esta carpeta `Prototipo/` (debe contener `Assets/`, `Packages/`, `ProjectSettings/`).
-2. Unity **6000.5.9f1** recomendado.
+2. Unity **6000.5.10f1** (versión oficial del equipo; el prototipo se creó en 6000.5.9f1 y abre bien en 10f1).
 3. Escenas principales:
    - `Assets/Scenes/World_Main.unity`
    - `Assets/Scenes/Combat_Arena.unity`

@@ -103,7 +103,7 @@ Cuando los tengas importados, escribe en el chat: **assets importados**.
 
 ## Notas
 
-- Motor: **Unity 6000.x + URP**, Windows PC.  
+- Motor oficial del equipo: **Unity 6000.5.10f1 + URP**, Windows PC.  
 - Nadar = gameplay (trigger + anim), no requiere ocean pack.  
 - Armas = props estáticos parentados a la mano; animación = Universal Anim Library.  
 - Carpeta sugerida al importar: `Assets/ThirdParty/<PackName>/`.
