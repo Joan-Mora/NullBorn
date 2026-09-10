@@ -1,0 +1,65 @@
+# Unity generated
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+**/MemoryCaptures/
+**/Recordings/
+**/_BurstDebugInformation_DoNotShip/
+**/*_BurstDebugInformation_DoNotShip/
+*.csproj
+*.unityproj
+*.sln
+!Server/**/*.csproj
+!Server/**/*.sln
+!Server/**/*.slnx
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+*.log
+compile_log.txt
+sysinfo.txt
+**/Captures/
+unity_setup.log
+
+# .NET
+Server/**/bin/
+Server/**/obj/
+Server/**/.vs/
+.env
+*.user
+
+# Inbox: raw packs / media (local only)
+/_Inbox/
+
+# Original archives inside Assets (if reintroduced)
+/Assets/Original/
+/Assets/**/*.zip
+/Assets/**/*.rar
+/Assets/**/*.7z
+*.zip
+*.rar
+*.7z
+
+# macOS junk from zip extracts
+**/__MACOSX/
+**/.DS_Store
+
+# OS / IDE
+Thumbs.db
+.vs/
+.idea/
+*.pptx
+
+# Large unitypackages already imported
+Assets/_ThirdParty/VFX/*.unitypackage

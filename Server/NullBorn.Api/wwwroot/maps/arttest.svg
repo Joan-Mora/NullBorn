@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="grass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2a3d28"/>
+      <stop offset="50%" stop-color="#334832"/>
+      <stop offset="100%" stop-color="#273826"/>
+    </linearGradient>
+    <pattern id="grid" width="64" height="64" patternUnits="userSpaceOnUse">
+      <path d="M 64 0 L 0 0 0 64" fill="none" stroke="#3d5238" stroke-width="1" opacity="0.35"/>
+    </pattern>
+    <radialGradient id="plazaGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#5a7048" stop-opacity="0.95"/>
+      <stop offset="70%" stop-color="#465a3a" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#334832" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Full playable ground (�40) � no void -->
+  <rect width="1024" height="1024" fill="url(#grass)"/>
+  <rect width="1024" height="1024" fill="url(#grid)"/>
+
+  <!-- Soft path ring -->
+  <circle cx="512" cy="512" r="210" fill="none" stroke="#6a7d52" stroke-width="28" opacity="0.35"/>
+  <circle cx="512" cy="512" r="210" fill="none" stroke="#8a9a70" stroke-width="2" opacity="0.25"/>
+
+  <!-- Central plaza / wood floor footprint -->
+  <rect x="392" y="392" width="240" height="240" rx="18" fill="url(#plazaGlow)" stroke="#9bb57a" stroke-width="3"/>
+  <rect x="430" y="430" width="164" height="164" rx="10" fill="#5c4a32" opacity="0.55" stroke="#c4a574" stroke-width="2"/>
+
+  <!-- Building walls (ArtTest props) -->
+  <rect x="452" y="360" width="120" height="28" rx="4" fill="#8a7a68" stroke="#c9b8a0" stroke-width="2"/>
+  <rect x="360" y="470" width="28" height="100" rx="4" fill="#8a7a68" stroke="#c9b8a0" stroke-width="2"/>
+  <rect x="636" y="470" width="28" height="100" rx="4" fill="#8a7a68" stroke="#c9b8a0" stroke-width="2"/>
+
+  <!-- Wagon -->
+  <ellipse cx="580" cy="560" rx="22" ry="14" fill="#6b4f2e" stroke="#c4783a" stroke-width="2" opacity="0.9"/>
+
+  <!-- Trees / bush -->
+  <circle cx="384" cy="608" r="28" fill="#2f4a2c" stroke="#6f9b6a" stroke-width="2"/>
+  <circle cx="640" cy="576" r="32" fill="#2a4228" stroke="#6f9b6a" stroke-width="2"/>
+  <circle cx="560" cy="420" r="14" fill="#3d5c38" stroke="#8fb573" stroke-width="1.5"/>
+
+  <!-- Spawn marker -->
+  <circle cx="512" cy="560" r="6" fill="#e0914a" stroke="#fff" stroke-width="2"/>
+
+  <text x="512" y="500" text-anchor="middle" fill="#e7efe4" font-family="Georgia, serif" font-size="28" font-weight="700">ArtTest Plaza</text>
+  <text x="512" y="530" text-anchor="middle" fill="#9bb57a" font-family="Segoe UI, sans-serif" font-size="14" letter-spacing="2">ZONA � 80�80 m</text>
+
+  <!-- Compass ticks -->
+  <text x="512" y="48" text-anchor="middle" fill="#c4783a" font-family="Segoe UI, sans-serif" font-size="22" font-weight="700">N</text>
+  <text x="992" y="520" text-anchor="middle" fill="#8fa392" font-family="Segoe UI, sans-serif" font-size="16">E</text>
+  <text x="512" y="1008" text-anchor="middle" fill="#8fa392" font-family="Segoe UI, sans-serif" font-size="16">S</text>
+  <text x="32" y="520" text-anchor="middle" fill="#8fa392" font-family="Segoe UI, sans-serif" font-size="16">O</text>
+</svg>

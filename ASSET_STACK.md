@@ -104,7 +104,11 @@ Cuando los tengas importados, escribe en el chat: **assets importados**.
 ## Notas
 
 - Motor oficial del equipo: **Unity 6000.5.10f1 + URP**, Windows PC.  
+- Proyecto Unity: **raíz del repo** (URP — ver `Assets/Settings/URP_Pipeline.asset`).  
+- Inbox de descargas (local): `_Inbox/` (p. ej. `_Inbox/SourcePacks/`, zips ignorados por git).  
+- Assets en Unity: **`Assets/_ThirdParty/`** (solo FBX/texturas URP; ver README ahí).  
 - Nadar = gameplay (trigger + anim), no requiere ocean pack.  
 - Armas = props estáticos parentados a la mano; animación = Universal Anim Library.  
-- Carpeta sugerida al importar: `Assets/ThirdParty/<PackName>/`.
+- **Rendimiento / calidad:** ver [`PERFORMANCE.md`](PERFORMANCE.md) — baseline ≥55 FPS antes de seguir con features.  
+- **Companion mapa (móvil):** ver [`Server/README.md`](Server/README.md) — PostgreSQL + API + PWA de navegación.  
 

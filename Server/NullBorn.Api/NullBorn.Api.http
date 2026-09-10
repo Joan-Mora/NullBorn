@@ -1,0 +1,6 @@
+@NullBorn.Api_HostAddress = http://localhost:5007
+
+GET {{NullBorn.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
