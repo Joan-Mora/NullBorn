@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: nullborn-pwa
+    runtime: static
+    repo: https://github.com/Joan-Mora/NullBorn
+    branch: main
+    buildCommand: sh tools/write-pwa-config.sh
+    staticPublishPath: Server/NullBorn.Api/wwwroot
+    envVars:
+      - key: NULLBORN_API_BASE
+        sync: false

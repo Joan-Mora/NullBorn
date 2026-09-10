@@ -6,10 +6,18 @@ using NullBorn.Api.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.UseUrls("http://0.0.0.0:5080");
+var port = Environment.GetEnvironmentVariable("PORT");
+if (string.IsNullOrWhiteSpace(port))
+    port = "5080";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 var connectionString = builder.Configuration.GetConnectionString("Default")
     ?? "Host=localhost;Port=5432;Database=nullborn;Username=nullborn;Password=nullborn";
+if (connectionString.Contains("render.com", StringComparison.OrdinalIgnoreCase)
+    && connectionString.IndexOf("SSL Mode", StringComparison.OrdinalIgnoreCase) < 0)
+{
+    connectionString += ";SSL Mode=Require;Trust Server Certificate=true";
+}
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));

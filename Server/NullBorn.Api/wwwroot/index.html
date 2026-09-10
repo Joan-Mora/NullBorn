@@ -16,81 +16,78 @@
   <div class="atmosphere" aria-hidden="true"></div>
 
   <div class="shell">
-    <header class="brand">
-      <div class="brand__mark" aria-hidden="true"></div>
-      <div class="brand__text">
-        <p class="brand__eyebrow">Companion · LAN</p>
-        <h1>NullBorn</h1>
-        <p class="brand__tag">Cartógrafo de navegación</p>
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand__mark" aria-hidden="true"></div>
+        <div>
+          <p class="brand__eyebrow">Mapa táctico · LAN</p>
+          <h1>NullBorn</h1>
+        </div>
       </div>
-    </header>
-
-    <section class="link-card" id="connectionCard" aria-labelledby="linkTitle">
-      <div class="link-card__head">
-        <h2 id="linkTitle">Conexión interactiva</h2>
+      <div class="topbar__aside">
         <span class="pill" id="statusPill" data-state="pending">
           <span class="pill__dot"></span>
           <span id="status">Conectando…</span>
         </span>
+        <button id="btnRefresh" type="button" class="icon-btn" title="Recargar pins y pose si el live se atrasó">
+          Actualizar
+        </button>
       </div>
+    </header>
 
-      <div class="link-grid">
-        <div class="stat">
-          <span class="stat__label">Zona</span>
-          <strong id="zoneName">—</strong>
-        </div>
-        <div class="stat">
-          <span class="stat__label">Jugador</span>
-          <strong id="playerLabel">local-player</strong>
-        </div>
-        <div class="stat stat--wide">
-          <span class="stat__label">URL del companion</span>
-          <strong id="lanHint" class="mono">—</strong>
-        </div>
-        <div class="stat">
-          <span class="stat__label">Pins activos</span>
-          <strong id="markerCount">0</strong>
-        </div>
-        <div class="stat">
-          <span class="stat__label">Pose</span>
-          <strong id="poseReadout" class="mono">—</strong>
-        </div>
-      </div>
-
-      <div class="link-actions">
-        <button id="btnRefresh" type="button" class="btn btn--primary">Sincronizar</button>
-        <button id="btnCopyUrl" type="button" class="btn btn--ghost">Copiar URL</button>
-      </div>
-      <p class="link-note">Misma zona táctica que el minimapa de Unity (SVG + overlays). El PC publica pose; aquí creas waypoints en vivo.</p>
-    </section>
+    <ol class="howto" aria-label="Cómo usar el mapa">
+      <li><strong>Toca</strong> el mapa para crear un pin</li>
+      <li><strong>Ir</strong> lo marca como destino en Unity</li>
+      <li><strong>Mantén</strong> un pin para borrarlo</li>
+    </ol>
 
     <section class="map-section" aria-labelledby="mapTitle">
       <div class="section-head">
-        <h2 id="mapTitle">Mapa táctico</h2>
-        <p>Toca para marcar · toca un pin para activar · mantén para borrar</p>
+        <div>
+          <h2 id="mapTitle">Art Test Plaza</h2>
+          <p id="zoneName" class="sr-only">—</p>
+        </div>
+        <span class="pose-chip mono" id="poseReadout">—</span>
       </div>
       <div id="mapWrap">
         <div id="mapBg" aria-hidden="true"></div>
         <div class="map-frame" aria-hidden="true"></div>
         <canvas id="overlay"></canvas>
       </div>
+      <div class="legend">
+        <span><i class="legend__player"></i> Jugador (PC)</span>
+        <span><i class="legend__pin"></i> Waypoint</span>
+        <span id="markerCountLabel"><strong id="markerCount">0</strong> pins</span>
+      </div>
+    </section>
+
+    <section class="share-card" aria-labelledby="shareTitle">
+      <h2 id="shareTitle" class="visually-hidden">Abrir en el teléfono</h2>
+      <p class="share-card__label" id="shareLabel">Enlace de esta página (PWA)</p>
+      <div class="url-row">
+        <code id="lanHint" class="mono">—</code>
+        <button id="btnCopyUrl" type="button" class="btn btn--ghost">Copiar enlace</button>
+      </div>
+      <p class="share-card__label" style="margin-top:10px">API (Postgres local)</p>
+      <code id="apiHint" class="mono url-row" style="display:block">misma origen</code>
     </section>
 
     <section class="panel" aria-labelledby="markersTitle">
       <div class="section-head">
-        <h2 id="markersTitle">Marcadores</h2>
-        <p id="markersSubtitle">Sin waypoints todavía</p>
+        <h2 id="markersTitle">Waypoints</h2>
+        <p id="markersSubtitle">Sin pins todavía</p>
       </div>
       <ul id="markerList"></ul>
     </section>
 
     <footer class="foot">
-      <span>NullBorn thesis companion</span>
-      <span>PostgreSQL · API · SignalR</span>
+      <span>Companion de tesis</span>
+      <span>REST + SignalR · Postgres</span>
     </footer>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+  <script src="/config.js"></script>
   <script src="/app.js"></script>
 </body>
 </html>

@@ -15,6 +15,18 @@
   const poseReadoutEl = document.getElementById("poseReadout");
   const markersSubtitle = document.getElementById("markersSubtitle");
   const btnCopyUrl = document.getElementById("btnCopyUrl");
+  const apiHint = document.getElementById("apiHint");
+  const shareLabel = document.getElementById("shareLabel");
+
+  function apiBase() {
+    return String(window.NULLBORN_API_BASE || "").trim().replace(/\/$/, "");
+  }
+
+  function apiUrl(path) {
+    const p = path.startsWith("/") ? path : `/${path}`;
+    const base = apiBase();
+    return base ? `${base}${p}` : p;
+  }
 
   let zone = null;
   let markers = [];
@@ -233,8 +245,11 @@
   }
 
   async function api(path, options) {
-    const res = await fetch(path, {
-      headers: { "Content-Type": "application/json", ...(options && options.headers) },
+    const headers = { "Content-Type": "application/json", ...(options && options.headers) };
+    if (apiBase().includes("ngrok"))
+      headers["ngrok-skip-browser-warning"] = "1";
+    const res = await fetch(apiUrl(path), {
+      headers,
       ...options
     });
     if (!res.ok) {
@@ -248,7 +263,8 @@
   function applyMapBackground(z) {
     if (!mapBg || !z) return;
     const url = z.mapImageUrl || "/maps/arttest.svg";
-    mapBg.style.backgroundImage = `url("${url}?v=3")`;
+    const abs = url.startsWith("http") ? url : apiUrl(url);
+    mapBg.style.backgroundImage = `url("${abs}?v=3")`;
     mapBg.style.backgroundSize = "cover";
     mapBg.style.backgroundPosition = "center";
     mapBg.style.backgroundRepeat = "no-repeat";
@@ -267,7 +283,15 @@
       name: zone.name ?? zone.Name
     };
     if (zoneNameEl) zoneNameEl.textContent = zone.name || ZONE_ID;
+    const mapTitle = document.getElementById("mapTitle");
+    if (mapTitle) mapTitle.textContent = zone.name || "Mapa táctico";
     if (lanHint) lanHint.textContent = `${location.protocol}//${location.host}`;
+    if (apiHint) apiHint.textContent = apiBase() || "misma origen (API local)";
+    if (shareLabel) {
+      shareLabel.textContent = apiBase()
+        ? "Página en Render — los datos van a tu API local (túnel)"
+        : "Abre esta página en el móvil (misma Wi‑Fi)";
+    }
     applyMapBackground(zone);
   }
 
@@ -439,10 +463,21 @@
     if (btn.dataset.act === "delete") await deleteMarker(id);
   });
 
-  document.getElementById("btnRefresh").addEventListener("click", async () => {
-    await loadMarkers();
-    await loadPlayer();
-  });
+  const btnRefresh = document.getElementById("btnRefresh");
+  if (btnRefresh) {
+    btnRefresh.addEventListener("click", async () => {
+      const prev = btnRefresh.textContent;
+      btnRefresh.textContent = "…";
+      try {
+        await loadMarkers();
+        await loadPlayer();
+        btnRefresh.textContent = "Listo";
+      } catch (_) {
+        btnRefresh.textContent = "Error";
+      }
+      setTimeout(() => { btnRefresh.textContent = prev; }, 900);
+    });
+  }
 
   if (btnCopyUrl) {
     btnCopyUrl.addEventListener("click", async () => {
@@ -450,7 +485,7 @@
       try {
         await navigator.clipboard.writeText(url);
         btnCopyUrl.textContent = "Copiado";
-        setTimeout(() => { btnCopyUrl.textContent = "Copiar URL"; }, 1200);
+        setTimeout(() => { btnCopyUrl.textContent = "Copiar enlace"; }, 1400);
       } catch (_) {
         btnCopyUrl.textContent = url;
       }
@@ -459,7 +494,7 @@
 
   async function connectSignalR() {
     const connection = new signalR.HubConnectionBuilder()
-      .withUrl("/hubs/game")
+      .withUrl(apiUrl("/hubs/game"))
       .withAutomaticReconnect()
       .build();
 

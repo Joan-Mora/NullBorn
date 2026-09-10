@@ -11,6 +11,6 @@ RPG stylized (aldea / naturaleza) — **un solo repositorio**: Unity en la raíz
 | Arquitectura | [`ARCHITECTURE.md`](ARCHITECTURE.md) |
 | Assets aprobados | [`ASSET_STACK.md`](ASSET_STACK.md) |
 | Rendimiento | [`PERFORMANCE.md`](PERFORMANCE.md) |
-| Packs locales (no git) | `_Inbox/` (zips / SourcePacks) |
+| Cómo desplegar | [`DEPLOY.md`](DEPLOY.md) — PWA en Render; API + Postgres + Unity en local |
 
 **Equipo:** Darwin Joan Aveiga Mora · Julian Esteban Chavez Zamora

@@ -17,6 +17,8 @@ dotnet run
 
 API + PWA: [http://127.0.0.1:5080](http://127.0.0.1:5080)
 
+Deploy (PWA en Render, API+Postgres locales): [`../DEPLOY.md`](../DEPLOY.md).
+
 Desde el teléfono (misma Wi‑Fi):
 
 1. En el PC, obtén tu IP LAN (`ipconfig` → IPv4).
