@@ -4,13 +4,16 @@ using UnityEngine.Rendering;
 namespace NullBorn.Game
 {
     /// <summary>
-    /// Applies cheap runtime graphics settings and keeps the 60 FPS cap enforced.
+    /// Cheap runtime graphics. Frame cap: -1 = uncapped (default, F3 can read real FPS).
+    /// Set frameCap to 60/120 for an explicit player cap. VSync stays off unless vsync is checked.
     /// </summary>
     public class RuntimePerformanceTweaks : MonoBehaviour
     {
-        [SerializeField] float shadowDistance = 18f;
-        [SerializeField] int targetFps = 60;
-        [SerializeField] bool forceHardShadows = true;
+        [SerializeField] float shadowDistance = 40f;
+        [Tooltip("-1 = uncapped. 60 or 120 = optional cap. Never force 60 unless this is set.")]
+        [SerializeField] int frameCap = -1;
+        [SerializeField] bool vsync;
+        [SerializeField] bool forceHardShadows = false;
         [SerializeField] bool disableSkinnedMotionVectors = true;
         [SerializeField] bool stripPropShadows = true;
 
@@ -20,19 +23,11 @@ namespace NullBorn.Game
 
         void OnEnable() => Apply();
 
-        void Update()
-        {
-            // Editor / other scripts sometimes reset this — keep the thesis cap.
-            if (Application.targetFrameRate != targetFps)
-                Application.targetFrameRate = targetFps;
-            if (QualitySettings.vSyncCount != 0)
-                QualitySettings.vSyncCount = 0;
-        }
+        void Update() => ApplyFrameCap();
 
         void Apply()
         {
-            Application.targetFrameRate = targetFps;
-            QualitySettings.vSyncCount = 0;
+            ApplyFrameCap();
             QualitySettings.shadowDistance = shadowDistance;
             QualitySettings.shadowCascades = 1;
 
@@ -66,6 +61,25 @@ namespace NullBorn.Game
                 if (r.shadowCastingMode == ShadowCastingMode.Off) continue;
                 r.shadowCastingMode = ShadowCastingMode.Off;
             }
+        }
+
+        void ApplyFrameCap()
+        {
+            if (vsync)
+            {
+                if (QualitySettings.vSyncCount < 1)
+                    QualitySettings.vSyncCount = 1;
+                if (Application.targetFrameRate != -1)
+                    Application.targetFrameRate = -1;
+                return;
+            }
+
+            if (QualitySettings.vSyncCount != 0)
+                QualitySettings.vSyncCount = 0;
+
+            var cap = frameCap < 1 ? -1 : frameCap;
+            if (Application.targetFrameRate != cap)
+                Application.targetFrameRate = cap;
         }
     }
 }

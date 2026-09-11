@@ -9,6 +9,9 @@ namespace NullBorn.Game.Net
         [SerializeField] Transform poseSource;
         [SerializeField] NullBornApiConfig config;
 
+        const float MoveDeadzoneMeters = 0.01f;
+        const float YawDeadzoneDegrees = 1.5f;
+
         bool publishing;
 
         void Awake() => ResolveRefs();
@@ -55,17 +58,10 @@ namespace NullBorn.Game.Net
             float elapsed = 0f;
             float lastX = float.NaN, lastZ = float.NaN, lastYaw = float.NaN;
 
+            var moveDeadzoneSqr = MoveDeadzoneMeters * MoveDeadzoneMeters;
+
             while (isActiveAndEnabled)
             {
-                var interval = config != null ? config.PoseInterval : 0.35f;
-                elapsed += Time.unscaledDeltaTime;
-                if (elapsed < interval)
-                {
-                    yield return null;
-                    continue;
-                }
-
-                elapsed = 0f;
                 if (sync == null || poseSource == null)
                 {
                     ResolveRefs();
@@ -74,7 +70,23 @@ namespace NullBorn.Game.Net
                 }
 
                 // Critical: never open HTTP while API is down — each failed connect hitch spikes FPS.
-                if (!sync.IsOnline || publishing)
+                if (!sync.IsOnline)
+                {
+                    elapsed = 0f;
+                    yield return null;
+                    continue;
+                }
+
+                // One in-flight PUT. Keep elapsed so the next sample fires as soon as it completes.
+                if (publishing)
+                {
+                    yield return null;
+                    continue;
+                }
+
+                var interval = config != null ? config.PoseInterval : 1f / 14f;
+                elapsed += Time.unscaledDeltaTime;
+                if (elapsed < interval)
                 {
                     yield return null;
                     continue;
@@ -83,13 +95,15 @@ namespace NullBorn.Game.Net
                 var p = poseSource.position;
                 var yaw = poseSource.eulerAngles.y;
                 if (!float.IsNaN(lastX)
-                    && (p.x - lastX) * (p.x - lastX) + (p.z - lastZ) * (p.z - lastZ) < 0.04f
-                    && Mathf.Abs(Mathf.DeltaAngle(lastYaw, yaw)) < 8f)
+                    && (p.x - lastX) * (p.x - lastX) + (p.z - lastZ) * (p.z - lastZ) < moveDeadzoneSqr
+                    && Mathf.Abs(Mathf.DeltaAngle(lastYaw, yaw)) < YawDeadzoneDegrees)
                 {
+                    elapsed = 0f;
                     yield return null;
                     continue;
                 }
 
+                elapsed = 0f;
                 lastX = p.x;
                 lastZ = p.z;
                 lastYaw = yaw;

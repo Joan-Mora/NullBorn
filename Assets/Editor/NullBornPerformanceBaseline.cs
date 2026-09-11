@@ -42,9 +42,9 @@ namespace NullBorn.Editor
                 EditorUtility.DisplayDialog(
                     "NullBorn — Performance Baseline",
                     "Aplicado:\n" +
-                    "• Sombras: 22 m, 1 cascada, hard, map 1024\n" +
-                    "• MSAA off · HDR off · luces adicionales máx 1/objeto\n" +
-                    "• Quality Ultra alineado a ese baseline\n" +
+                    "• Sombras: 40 m, 2 cascadas, soft medium, map 2048\n" +
+                    "• MSAA 2× · HDR off · luces adicionales máx 2/objeto\n" +
+                    "• Quality Ultra alineado a PERFORMANCE.md\n" +
                     "• VSync off en editor para medir FPS real\n\n" +
                     "Luego: NullBorn → Build Art Test Scene y mira Stats en Play.",
                     "OK");
@@ -62,21 +62,25 @@ namespace NullBorn.Editor
 
             var so = new SerializedObject(urp);
 
-            Set(so, "m_MSAA", 1);                         // off — big win with skinned hero
+            Set(so, "m_MSAA", 2);                         // 2x — PERFORMANCE.md
             Set(so, "m_RenderScale", 1f);
             Set(so, "m_SupportsHDR", false);
-            Set(so, "m_MainLightShadowmapResolution", 1024);
-            Set(so, "m_ShadowDistance", 22f);
-            Set(so, "m_ShadowCascadeCount", 1);
+            Set(so, "m_MainLightShadowmapResolution", 2048);
+            Set(so, "m_ShadowDistance", 40f);
+            Set(so, "m_ShadowCascadeCount", 2);
             Set(so, "m_Cascade2Split", 0.2f);
-            Set(so, "m_SoftShadowsSupported", false);
-            Set(so, "m_SoftShadowQuality", 0);
-            Set(so, "m_AdditionalLightsPerObjectLimit", 1);
+            Set(so, "m_SoftShadowsSupported", true);
+            Set(so, "m_SoftShadowQuality", 2);              // Medium
+            Set(so, "m_AdditionalLightsPerObjectLimit", 2);
             Set(so, "m_AdditionalLightShadowsSupported", false);
-            Set(so, "m_SupportsDynamicBatching", false);
+            Set(so, "m_SupportsDynamicBatching", true);
             Set(so, "m_UseSRPBatcher", true);
             Set(so, "m_ShadowDepthBias", 1f);
             Set(so, "m_ShadowNormalBias", 1f);
+            Set(so, "m_PrefilterSoftShadows", false);
+            Set(so, "m_PrefilterSoftShadowsQualityMedium", false);
+            Set(so, "m_PrefilterSoftShadowsQualityLow", true);
+            Set(so, "m_PrefilterSoftShadowsQualityHigh", true);
 
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(urp);
@@ -100,10 +104,10 @@ namespace NullBorn.Editor
                 QualitySettings.SetQualityLevel(ultraIndex, applyExpensiveChanges: true);
 
             // Align builtins that still matter beside URP.
-            QualitySettings.shadowDistance = 22f;
-            QualitySettings.shadowCascades = 1;
+            QualitySettings.shadowDistance = 40f;
+            QualitySettings.shadowCascades = 2;
             QualitySettings.shadowResolution = UnityEngine.ShadowResolution.Medium;
-            QualitySettings.antiAliasing = 0;
+            QualitySettings.antiAliasing = 2;
             QualitySettings.anisotropicFiltering = AnisotropicFiltering.Enable;
             QualitySettings.lodBias = 1f;
             QualitySettings.maximumLODLevel = 0;

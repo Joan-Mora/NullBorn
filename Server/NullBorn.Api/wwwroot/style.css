@@ -73,22 +73,10 @@ body { min-height: 100dvh; }
   height: 40px;
   flex-shrink: 0;
   border-radius: 12px;
-  background:
-    linear-gradient(145deg, rgba(111, 155, 106, 0.35), transparent 60%),
-    linear-gradient(320deg, rgba(196, 120, 58, 0.4), #1a261e 70%);
+  object-fit: cover;
+  display: block;
+  background: #0a120e;
   border: 1px solid rgba(196, 120, 58, 0.35);
-  position: relative;
-}
-
-.brand__mark::after {
-  content: "";
-  position: absolute;
-  inset: 11px;
-  border: 1.5px solid rgba(231, 239, 228, 0.55);
-  border-radius: 50%;
-  border-top-color: transparent;
-  border-left-color: transparent;
-  transform: rotate(-20deg);
 }
 
 .brand__eyebrow {

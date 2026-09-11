@@ -22,6 +22,7 @@ namespace NullBorn.Game.Net
         public bool IsOnline { get; private set; }
 
         UnityWebRequest activeRequest;
+        UnityWebRequest poseRequest;
         bool sessionGaveUp;
         bool loggedOffline;
 
@@ -53,18 +54,24 @@ namespace NullBorn.Game.Net
 
         void AbortActiveRequest()
         {
-            if (activeRequest == null) return;
+            AbortOne(ref activeRequest);
+            AbortOne(ref poseRequest);
+        }
+
+        static void AbortOne(ref UnityWebRequest req)
+        {
+            if (req == null) return;
             try
             {
-                if (!activeRequest.isDone)
-                    activeRequest.Abort();
+                if (!req.isDone)
+                    req.Abort();
             }
             catch { /* domain reload */ }
 
-            try { activeRequest.Dispose(); }
+            try { req.Dispose(); }
             catch { /* ignored */ }
 
-            activeRequest = null;
+            req = null;
         }
 
         NullBornApiConfig EnsureConfig()
@@ -117,26 +124,68 @@ namespace NullBorn.Game.Net
                 yield break;
             }
 
-            // Single short probe — never block gameplay with retry timeouts.
-            yield return FetchZoneProbe();
+            yield return FetchHealthProbe();
             if (!IsOnline)
             {
                 GiveUpOffline("API no responde en " + cfg.BaseUrl);
                 yield break;
             }
 
+            yield return FetchZoneProbe();
+            yield return FetchMarkers();
+
+            Debug.Log(
+                "[NullBorn] Companion API online → " + cfg.BaseUrl
+                + " zona=" + cfg.ZoneId
+                + " · waypoints=" + LatestMarkers.Length
+                + ". Pins del teléfono aparecen en el mundo / minimapa.");
+
             while (isActiveAndEnabled && IsOnline && !sessionGaveUp)
             {
-                yield return FetchMarkers();
+                yield return new WaitForSecondsRealtime(cfg.MarkersInterval);
                 if (!isActiveAndEnabled || sessionGaveUp || !IsOnline)
                     yield break;
-                yield return new WaitForSecondsRealtime(cfg.MarkersInterval);
+                yield return FetchMarkers();
             }
+        }
+
+        IEnumerator FetchHealthProbe()
+        {
+            var cfg = EnsureConfig();
+            if (cfg == null || !isActiveAndEnabled)
+                yield break;
+
+            var req = UnityWebRequest.Get($"{cfg.BaseUrl}/api/health");
+            req.timeout = 2;
+            activeRequest = req;
+            yield return req.SendWebRequest();
+            if (activeRequest == req)
+                activeRequest = null;
+
+            if (!isActiveAndEnabled)
+            {
+                SafeDispose(req);
+                yield break;
+            }
+
+            if (req.result != UnityWebRequest.Result.Success)
+            {
+                SafeDispose(req);
+                IsOnline = false;
+                yield break;
+            }
+
+            IsOnline = true;
+            SafeDispose(req);
         }
 
         public IEnumerator PublishPose(float x, float z, float yaw)
         {
             if (sessionGaveUp || !IsOnline)
+                yield break;
+
+            // Don't stack PUTs — one in flight. API broadcasts PlayerPoseUpdated over SignalR.
+            if (poseRequest != null && !poseRequest.isDone)
                 yield break;
 
             var cfg = EnsureConfig();
@@ -153,10 +202,10 @@ namespace NullBorn.Game.Net
             req.SetRequestHeader("Content-Type", "application/json");
             req.timeout = 1;
 
-            activeRequest = req;
+            poseRequest = req;
             yield return req.SendWebRequest();
-            if (activeRequest == req)
-                activeRequest = null;
+            if (poseRequest == req)
+                poseRequest = null;
 
             if (!isActiveAndEnabled)
             {
@@ -181,8 +230,7 @@ namespace NullBorn.Game.Net
                 yield break;
 
             var req = UnityWebRequest.Get($"{cfg.BaseUrl}/api/zones/{UnityWebRequest.EscapeURL(cfg.ZoneId)}");
-            // Keep probe short so a dead host doesn't stall Play entry.
-            req.timeout = 1;
+            req.timeout = 2;
             activeRequest = req;
             yield return req.SendWebRequest();
             if (activeRequest == req)
@@ -197,11 +245,9 @@ namespace NullBorn.Game.Net
             if (req.result != UnityWebRequest.Result.Success)
             {
                 SafeDispose(req);
-                IsOnline = false;
                 yield break;
             }
 
-            IsOnline = true;
             var remote = JsonUtility.FromJson<ZoneDto>(req.downloadHandler.text);
             SafeDispose(req);
             if (remote != null)

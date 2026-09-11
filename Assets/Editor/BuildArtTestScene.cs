@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using NullBorn.Game;
+using NullBorn.Game.Combat;
 using NullBorn.Game.Map;
 using NullBorn.Game.Net;
 using UnityEditor;
@@ -19,15 +20,27 @@ namespace NullBorn.Editor
         const string ScenePath = "Assets/Scenes/ArtTest.unity";
         const string AnimFolder = "Assets/Art/Animation";
         const string ControllerPath = AnimFolder + "/PlayerLocomotion.controller";
+        const string MeleeClipPath = AnimFolder + "/Cap0_SwordAttack.anim";
+        const string UpperBodyMaskPath = AnimFolder + "/Cap0_UpperBody.mask";
 
         const string HeroFbx = "Assets/_ThirdParty/Characters/Base/FBX/Superhero_Male_FullBody.fbx";
         const string AnimLibFbx = "Assets/_ThirdParty/Characters/Animations/UAL1/UAL1_Standard.fbx";
         const string SwordFbx = "Assets/_ThirdParty/Armory/FBX/fbx/Weapons/SFA_Broadsword_002.fbx";
+        const string DummyMonsterPrefab = "Assets/_ThirdParty/Stylized3DMonster/Monster07_FreeTrial/Prefab/Monster07_01.prefab";
+        const string DummyTag = "Dummy";
+        const string EnemyLayerName = "Enemy";
+        const float SwordAttackHitNormalizedTime = 0.35f;
 
         [MenuItem("NullBorn/Build Art Test Scene")]
         public static void BuildFromMenu()
         {
             Build(showDialog: true);
+        }
+
+        /// <summary>Batchmode entry: Unity.exe -executeMethod NullBorn.Editor.BuildArtTestScene.BuildBatch</summary>
+        public static void BuildBatch()
+        {
+            Build(showDialog: false);
         }
 
         [MenuItem("NullBorn/Rebuild Locomotion Controller")]
@@ -50,6 +63,11 @@ namespace NullBorn.Editor
             ConfigureHeroImport();
             ConfigureAnimLibraryImport();
             ConfigureThirdPartyTextures();
+            Cap0ArtSetup.ConfigureRangerImport();
+            Cap0ArtSetup.ConfigureHairImport();
+            Cap0ArtSetup.EnsureInteractableTagAndLayer();
+            EnsureCombatTagsAndLayers();
+            Cap0ArtSetup.EnsureAlwaysIncludedRimShader();
             NullBornPerformanceBaseline.Apply(showDialog: false);
             AssetDatabase.Refresh();
 
@@ -65,7 +83,7 @@ namespace NullBorn.Editor
             light.type = LightType.Directional;
             light.intensity = 1.05f;
             light.color = new Color(1f, 0.96f, 0.88f);
-            light.shadows = LightShadows.Hard;
+            light.shadows = LightShadows.Soft;
             light.shadowStrength = 0.8f;
             light.shadowBias = 0.05f;
             light.shadowNormalBias = 0.4f;
@@ -76,7 +94,9 @@ namespace NullBorn.Editor
             ScatterNature();
 
             var player = BuildPlayer();
+            SpawnCombatDummy(player.transform);
             var camera = SetupCamera(player.transform);
+            Cap0ArtSetup.ApplyAtmosphere(camera, light);
 
             var motor = player.GetComponent<SimpleThirdPersonMotor>();
             motor.SetCamera(camera.transform);
@@ -91,6 +111,7 @@ namespace NullBorn.Editor
             if (SceneView.lastActiveSceneView != null)
                 SceneView.lastActiveSceneView.LookAt(player.transform.position + Vector3.up, Quaternion.Euler(22f, -30f, 0f), 14f);
 
+            Cap0ArtSetup.LogSceneAudit();
             Debug.Log("[NullBorn] Art test scene saved to " + ScenePath);
 
             if (showDialog)
@@ -101,7 +122,9 @@ namespace NullBorn.Editor
                     "Controles:\n" +
                     "WASD + Shift sprint · Esc pausa (estilo mouse/teclado + sensibilidad)\n" +
                     "Con mouse: mouse=camara, A/D=girar personaje · Solo teclado: A/D=camara\n" +
-                    "M mapa · F3 FPS\n\n" +
+                    "Click / F = ataque (desenvaina si hace falta) · R/Q = envainar/desenvainar\n" +
+                    "M mapa · F3 FPS\n" +
+                    "Cap 0: entorno sin outline · rim en puerta/waypoints · outfit Ranger\n\n" +
                     "Play ►",
                     "OK");
             }
@@ -128,6 +151,12 @@ namespace NullBorn.Editor
             if (importer.importAnimation)
             {
                 importer.importAnimation = false;
+                dirty = true;
+            }
+
+            if (!importer.isReadable)
+            {
+                importer.isReadable = true;
                 dirty = true;
             }
 
@@ -253,6 +282,7 @@ namespace NullBorn.Editor
             ground.transform.localScale = new Vector3(8f, 1f, 8f);
             ground.isStatic = true;
             GameObjectUtility.SetStaticEditorFlags(ground, StaticEditorFlags.BatchingStatic | StaticEditorFlags.OccludeeStatic);
+            Cap0ArtSetup.PaintGround(ground);
         }
 
         static void BuildVillagePlaza()
@@ -261,7 +291,8 @@ namespace NullBorn.Editor
             SpawnProp(root.transform, "Assets/_ThirdParty/Village/FBX/Floor_WoodLight.fbx", new Vector3(0f, 0.01f, 0f), Quaternion.identity, new Vector3(2f, 1f, 2f), castShadows: false);
             SpawnProp(root.transform, "Assets/_ThirdParty/Village/FBX/Wall_Plaster_Straight.fbx", new Vector3(-3.5f, 0f, 2f), Quaternion.Euler(0f, 90f, 0f), castShadows: false);
             SpawnProp(root.transform, "Assets/_ThirdParty/Village/FBX/Wall_Plaster_Straight.fbx", new Vector3(3.5f, 0f, 2f), Quaternion.Euler(0f, -90f, 0f), castShadows: false);
-            SpawnProp(root.transform, "Assets/_ThirdParty/Village/FBX/Wall_Plaster_Door_Round.fbx", new Vector3(0f, 0f, 4f), Quaternion.Euler(0f, 180f, 0f), castShadows: false);
+            var door = SpawnProp(root.transform, "Assets/_ThirdParty/Village/FBX/Wall_Plaster_Door_Round.fbx", new Vector3(0f, 0f, 4f), Quaternion.Euler(0f, 180f, 0f), castShadows: false);
+            Cap0ArtSetup.MarkInteractable(door);
             SpawnProp(root.transform, "Assets/_ThirdParty/Village/FBX/Prop_Wagon.fbx", new Vector3(2.8f, 0f, -1.5f), Quaternion.Euler(0f, 35f, 0f), castShadows: false);
         }
 
@@ -291,7 +322,7 @@ namespace NullBorn.Editor
             player.AddComponent<SimpleThirdPersonMotor>();
             player.AddComponent<SimpleLocomotionAnim>();
 
-            var visual = SpawnFbx(player.transform, HeroFbx, Vector3.zero, Quaternion.identity);
+            var visual = SpawnFbx(player.transform, HeroFbx, Vector3.zero, Quaternion.identity, unpack: true);
             if (visual == null)
                 return player;
 
@@ -321,41 +352,64 @@ namespace NullBorn.Editor
             else
                 Debug.LogWarning("[NullBorn] Hero avatar not found on " + HeroFbx);
 
-            FixHeroMaterials(visual);
+            Cap0ArtSetup.DressHeroWithRanger(visual, animator);
 
             var animBridge = player.GetComponent<SimpleLocomotionAnim>();
             var so = new SerializedObject(animBridge);
             so.FindProperty("animator").objectReferenceValue = animator;
             so.ApplyModifiedPropertiesWithoutUndo();
 
-            AttachSwordToHand(animator, visual.transform);
+            AttachSwordHolstered(animator, visual.transform);
+
+            var sword = FindNamed(visual.transform, Cap0ArtSetup.WeaponSwordName);
+            var holster = FindNamed(visual.transform, Cap0ArtSetup.WeaponHolsterName);
+            Transform hand = null;
+            if (animator != null && animator.isHuman)
+                hand = animator.GetBoneTransform(HumanBodyBones.RightHand);
+            if (hand == null)
+                hand = FindBone(visual.transform, "Hand_R", "RightHand", "hand_r", "mixamorig:RightHand", "HandR");
+
+            var weapon = player.GetComponent<WeaponController>() ?? player.AddComponent<WeaponController>();
+            if (sword != null && holster != null)
+            {
+                var gripRot = new Quaternion(
+                    Cap0ArtSetup.SwordGripQx, Cap0ArtSetup.SwordGripQy,
+                    Cap0ArtSetup.SwordGripQz, Cap0ArtSetup.SwordGripQw);
+                var gripScale = new Vector3(
+                    Cap0ArtSetup.SwordGripSx, Cap0ArtSetup.SwordGripSy, Cap0ArtSetup.SwordGripSz);
+                var gripPos = new Vector3(
+                    Cap0ArtSetup.SwordGripPx, Cap0ArtSetup.SwordGripPy, Cap0ArtSetup.SwordGripPz);
+                weapon.Wire(
+                    animator,
+                    sword,
+                    holster,
+                    hand,
+                    sword.localPosition,
+                    sword.localRotation,
+                    sword.localScale,
+                    gripPos,
+                    gripRot,
+                    gripScale);
+            }
+
+            var meleeHost = animator != null ? animator.gameObject : visual;
+            var melee = meleeHost.GetComponent<CombatMeleeAttack>() ?? meleeHost.AddComponent<CombatMeleeAttack>();
+            var meleeSo = new SerializedObject(melee);
+            meleeSo.FindProperty("animator").objectReferenceValue = animator;
+            meleeSo.FindProperty("weapon").objectReferenceValue = weapon;
+            meleeSo.ApplyModifiedPropertiesWithoutUndo();
+
+            Cap0ArtSetup.LogPlayerVisual(visual);
 
             return player;
         }
 
-        static void AttachSwordToHand(Animator animator, Transform visualRoot)
+        static void AttachSwordHolstered(Animator animator, Transform visualRoot)
         {
-            Transform hand = null;
-            if (animator != null && animator.isHuman)
-                hand = animator.GetBoneTransform(HumanBodyBones.RightHand);
-
-            if (hand == null)
-                hand = FindBone(visualRoot, "Hand_R", "RightHand", "hand_r", "mixamorig:RightHand", "HandR");
-
-            if (hand == null)
-            {
-                Debug.LogWarning("[NullBorn] Right hand bone not found — sword parented to Visual.");
-                hand = visualRoot;
-            }
-
-            var sword = SpawnFbx(hand, SwordFbx, Vector3.zero, Quaternion.identity, new Vector3(0.55f, 0.55f, 0.55f));
+            var sword = SpawnFbx(visualRoot, SwordFbx, Vector3.zero, Quaternion.identity, Vector3.one);
             if (sword == null) return;
 
-            sword.name = "Weapon_Sword";
-            StripColliders(sword);
-            // Grip + 180° yaw tweak (blade/handle orientation on Superhero hand).
-            sword.transform.localPosition = new Vector3(0.02f, 0.05f, 0.02f);
-            sword.transform.localRotation = Quaternion.Euler(0f, 270f, -90f);
+            Cap0ArtSetup.HolsterEquippedSword(sword, animator, visualRoot);
         }
 
         static Transform FindBone(Transform root, params string[] names)
@@ -463,8 +517,280 @@ namespace NullBorn.Editor
                 }
             }
 
+            var meleeClip = EnsureSwordAttackClip();
+            AddAttackLayer(controller, meleeClip);
+
             AssetDatabase.SaveAssets();
             return controller;
+        }
+
+        /// <summary>
+        /// UAL1 take Armature|Sword_Attack → project clip with animation event Hit @ 35%.
+        /// Do not add events on the third-party FBX; rebuild refreshes this .anim.
+        /// </summary>
+        static AnimationClip EnsureSwordAttackClip()
+        {
+            var source = FindBestClip(
+                AnimLibFbx,
+                preferredExact: new[] { "Sword_Attack", "Armature|Sword_Attack" },
+                mustContain: "Sword_Attack",
+                exclude: new[] { "Idle", "Walk", "Run" });
+
+            if (source == null)
+            {
+                Debug.LogError("[NullBorn][Combat] No Sword_Attack clip in UAL1: " + AnimLibFbx);
+                return null;
+            }
+
+            EnsureFolder(AnimFolder);
+            if (AssetDatabase.LoadAssetAtPath<AnimationClip>(MeleeClipPath) != null)
+                AssetDatabase.DeleteAsset(MeleeClipPath);
+
+            var copy = Object.Instantiate(source);
+            copy.name = "Cap0_SwordAttack";
+            AssetDatabase.CreateAsset(copy, MeleeClipPath);
+            copy = AssetDatabase.LoadAssetAtPath<AnimationClip>(MeleeClipPath);
+            if (copy == null)
+            {
+                Debug.LogError("[NullBorn][Combat] Failed to write " + MeleeClipPath);
+                return null;
+            }
+
+            var settings = AnimationUtility.GetAnimationClipSettings(copy);
+            settings.loopTime = false;
+            AnimationUtility.SetAnimationClipSettings(copy, settings);
+
+            var hitTime = Mathf.Clamp(copy.length * SwordAttackHitNormalizedTime, 0.05f, Mathf.Max(0.06f, copy.length * 0.8f));
+            var hit = new AnimationEvent
+            {
+                functionName = "Hit",
+                time = hitTime,
+                messageOptions = SendMessageOptions.DontRequireReceiver
+            };
+            AnimationUtility.SetAnimationEvents(copy, new[] { hit });
+            EditorUtility.SetDirty(copy);
+            AssetDatabase.SaveAssets();
+            Debug.Log(
+                "[NullBorn][Combat] Melee clip: UAL1 Armature|Sword_Attack → " + MeleeClipPath
+                + " | event Hit @ " + hitTime.ToString("0.000") + "s (35% of " + copy.length.ToString("0.000") + "s)");
+            return AssetDatabase.LoadAssetAtPath<AnimationClip>(MeleeClipPath);
+        }
+
+        static void AddAttackLayer(AnimatorController controller, AnimationClip meleeClip)
+        {
+            if (controller == null || meleeClip == null) return;
+
+            var mask = EnsureUpperBodyMask();
+            controller.AddLayer("Attack");
+            var layers = controller.layers;
+            var i = layers.Length - 1;
+            layers[i].defaultWeight = 0f;
+            layers[i].blendingMode = AnimatorLayerBlendingMode.Override;
+            layers[i].iKPass = false;
+            layers[i].avatarMask = mask;
+            controller.layers = layers;
+
+            var sm = controller.layers[i].stateMachine;
+            var empty = sm.AddState("Empty");
+            empty.writeDefaultValues = false;
+            sm.defaultState = empty;
+
+            var attack = sm.AddState("Attack");
+            attack.motion = meleeClip;
+            attack.writeDefaultValues = true;
+
+            var back = attack.AddTransition(empty);
+            back.hasExitTime = true;
+            back.exitTime = 0.9f;
+            back.hasFixedDuration = true;
+            back.duration = 0.12f;
+            back.interruptionSource = TransitionInterruptionSource.None;
+
+            Debug.Log(
+                "[NullBorn][Combat] Animator layer Attack + Cap0_UpperBody.mask "
+                + "(Body/Head/Arms/Fingers; legs+root off). Clip Cap0_SwordAttack + Hit.");
+        }
+
+        static AvatarMask EnsureUpperBodyMask()
+        {
+            EnsureFolder(AnimFolder);
+            var mask = AssetDatabase.LoadAssetAtPath<AvatarMask>(UpperBodyMaskPath);
+            if (mask == null)
+            {
+                mask = new AvatarMask();
+                AssetDatabase.CreateAsset(mask, UpperBodyMaskPath);
+                mask = AssetDatabase.LoadAssetAtPath<AvatarMask>(UpperBodyMaskPath);
+            }
+
+            for (var p = 0; p < (int)AvatarMaskBodyPart.LastBodyPart; p++)
+                mask.SetHumanoidBodyPartActive((AvatarMaskBodyPart)p, false);
+
+            mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.Body, true);
+            mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.Head, true);
+            mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftArm, true);
+            mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.RightArm, true);
+            mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftFingers, true);
+            mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.RightFingers, true);
+            mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftHandIK, true);
+            mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.RightHandIK, true);
+            EditorUtility.SetDirty(mask);
+            return mask;
+        }
+
+        static Transform FindNamed(Transform root, string name)
+        {
+            if (root == null) return null;
+            foreach (var t in root.GetComponentsInChildren<Transform>(true))
+            {
+                if (t.name == name)
+                    return t;
+            }
+
+            return null;
+        }
+
+        static void EnsureCombatTagsAndLayers()
+        {
+            var tagManager = new SerializedObject(
+                AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset")[0]);
+
+            var tags = tagManager.FindProperty("tags");
+            var hasDummy = false;
+            for (var t = 0; t < tags.arraySize; t++)
+            {
+                if (tags.GetArrayElementAtIndex(t).stringValue == DummyTag)
+                    hasDummy = true;
+            }
+
+            if (!hasDummy)
+            {
+                tags.InsertArrayElementAtIndex(tags.arraySize);
+                tags.GetArrayElementAtIndex(tags.arraySize - 1).stringValue = DummyTag;
+            }
+
+            var layers = tagManager.FindProperty("layers");
+            if (layers != null)
+            {
+                var hasEnemy = false;
+                for (var l = 0; l < layers.arraySize; l++)
+                {
+                    if (layers.GetArrayElementAtIndex(l).stringValue == EnemyLayerName)
+                        hasEnemy = true;
+                }
+
+                if (!hasEnemy)
+                {
+                    var written = false;
+                    for (var l = 7; l < layers.arraySize; l++)
+                    {
+                        var slot = layers.GetArrayElementAtIndex(l);
+                        if (string.IsNullOrEmpty(slot.stringValue))
+                        {
+                            slot.stringValue = EnemyLayerName;
+                            written = true;
+                            break;
+                        }
+                    }
+
+                    if (!written)
+                        Debug.LogWarning("[NullBorn][Combat] No empty layer slot for Enemy — Dummy tag still works.");
+                }
+            }
+
+            tagManager.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(tagManager.targetObject);
+        }
+
+        static void SpawnCombatDummy(Transform player)
+        {
+            EnsureCombatTagsAndLayers();
+
+            var dummy = new GameObject("Dummy");
+            var enemyLayer = LayerMask.NameToLayer(EnemyLayerName);
+            if (enemyLayer >= 0)
+                SetLayerRecurse(dummy.transform, enemyLayer);
+            dummy.tag = DummyTag;
+
+            var spawn = player != null
+                ? player.position + player.forward * 2.2f
+                : new Vector3(0f, 0f, -1f);
+            spawn.y = 0f;
+            dummy.transform.position = spawn;
+            if (player != null)
+            {
+                var look = player.position - dummy.transform.position;
+                look.y = 0f;
+                if (look.sqrMagnitude > 0.01f)
+                    dummy.transform.rotation = Quaternion.LookRotation(look, Vector3.up);
+            }
+
+            var visual = TrySpawnDummyMonster(dummy.transform);
+            if (visual == null)
+            {
+                visual = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+                visual.name = "DummyCapsule";
+                visual.transform.SetParent(dummy.transform, false);
+                visual.transform.localPosition = new Vector3(0f, 0.9f, 0f);
+                Object.DestroyImmediate(visual.GetComponent<Collider>());
+            }
+            else
+            {
+                GroundAndFit(visual, 1.7f);
+            }
+
+            StripColliders(dummy);
+
+            var col = dummy.AddComponent<CapsuleCollider>();
+            col.height = 1.8f;
+            col.radius = 0.4f;
+            col.center = new Vector3(0f, 0.9f, 0f);
+            col.isTrigger = true;
+
+            dummy.AddComponent<CombatDummy>();
+            enemyLayer = LayerMask.NameToLayer(EnemyLayerName);
+            if (enemyLayer >= 0)
+                SetLayerRecurse(dummy.transform, enemyLayer);
+            Debug.Log("[NullBorn][Combat] Dummy spawned at " + dummy.transform.position + " (tag Dummy, layer Enemy).");
+        }
+
+        static GameObject TrySpawnDummyMonster(Transform parent)
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(DummyMonsterPrefab);
+            if (prefab == null) return null;
+
+            var go = (GameObject)PrefabUtility.InstantiatePrefab(prefab, parent);
+            if (PrefabUtility.IsPartOfPrefabInstance(go))
+                PrefabUtility.UnpackPrefabInstance(go, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+            go.name = "DummyVisual";
+            go.transform.localPosition = Vector3.zero;
+            go.transform.localRotation = Quaternion.identity;
+            foreach (var anim in go.GetComponentsInChildren<Animator>(true))
+                anim.applyRootMotion = false;
+            return go;
+        }
+
+        static void GroundAndFit(GameObject visual, float targetHeight)
+        {
+            var renderers = visual.GetComponentsInChildren<Renderer>();
+            if (renderers.Length == 0) return;
+
+            var b = renderers[0].bounds;
+            for (var i = 1; i < renderers.Length; i++)
+                b.Encapsulate(renderers[i].bounds);
+            if (b.size.y > 0.05f)
+                visual.transform.localScale *= targetHeight / b.size.y;
+
+            b = renderers[0].bounds;
+            for (var i = 1; i < renderers.Length; i++)
+                b.Encapsulate(renderers[i].bounds);
+            visual.transform.position += Vector3.up * -b.min.y;
+        }
+
+        static void SetLayerRecurse(Transform t, int layer)
+        {
+            t.gameObject.layer = layer;
+            for (var i = 0; i < t.childCount; i++)
+                SetLayerRecurse(t.GetChild(i), layer);
         }
 
         static void ForceClipLoop(AnimationClip clip)
@@ -531,82 +857,6 @@ namespace NullBorn.Editor
             }
         }
 
-        static void FixHeroMaterials(GameObject visual)
-        {
-            var urpLit = Shader.Find("Universal Render Pipeline/Lit");
-            if (urpLit == null) return;
-
-            var skinBase = AssetDatabase.LoadAssetAtPath<Texture2D>(
-                "Assets/_ThirdParty/Characters/Base/Textures/T_Superhero_Male_Ligh.png");
-            var skinNormal = AssetDatabase.LoadAssetAtPath<Texture2D>(
-                "Assets/_ThirdParty/Characters/Base/Textures/T_Superhero_Male_Normal.png");
-
-            foreach (var renderer in visual.GetComponentsInChildren<Renderer>(true))
-            {
-                var mats = renderer.sharedMaterials;
-                for (var i = 0; i < mats.Length; i++)
-                {
-                    var mat = new Material(urpLit) { name = "Hero_URP" };
-                    if (skinBase != null)
-                        mat.SetTexture("_BaseMap", skinBase);
-                    if (skinNormal != null)
-                    {
-                        mat.SetTexture("_BumpMap", skinNormal);
-                        mat.EnableKeyword("_NORMALMAP");
-                    }
-
-                    mats[i] = mat;
-                }
-
-                renderer.sharedMaterials = mats;
-            }
-        }
-
-        static void UpgradeMaterialsToUrp(GameObject root)
-        {
-            var urpLit = Shader.Find("Universal Render Pipeline/Lit");
-            if (urpLit == null) return;
-
-            foreach (var renderer in root.GetComponentsInChildren<Renderer>(true))
-            {
-                var mats = renderer.sharedMaterials;
-                for (var i = 0; i < mats.Length; i++)
-                {
-                    var source = mats[i];
-                    if (source == null || source.shader.name.Contains("Universal Render Pipeline"))
-                        continue;
-
-                    var mat = new Material(urpLit) { name = source.name + "_URP" };
-
-                    if (source.HasProperty("_MainTex"))
-                        mat.SetTexture("_BaseMap", source.GetTexture("_MainTex"));
-                    if (source.HasProperty("_BaseMap") && mat.GetTexture("_BaseMap") == null)
-                        mat.SetTexture("_BaseMap", source.GetTexture("_BaseMap"));
-                    if (source.HasProperty("_Color"))
-                        mat.SetColor("_BaseColor", source.GetColor("_Color"));
-                    if (source.HasProperty("_BaseColor"))
-                        mat.SetColor("_BaseColor", source.GetColor("_BaseColor"));
-                    if (source.HasProperty("_BumpMap"))
-                    {
-                        mat.SetTexture("_BumpMap", source.GetTexture("_BumpMap"));
-                        mat.EnableKeyword("_NORMALMAP");
-                    }
-
-                    var tex = mat.GetTexture("_BaseMap");
-                    if (tex != null && tex.name.IndexOf("Leaf", System.StringComparison.OrdinalIgnoreCase) >= 0)
-                    {
-                        mat.SetFloat("_AlphaClip", 1f);
-                        mat.SetFloat("_Cutoff", 0.4f);
-                        mat.EnableKeyword("_ALPHATEST_ON");
-                    }
-
-                    mats[i] = mat;
-                }
-
-                renderer.sharedMaterials = mats;
-            }
-        }
-
         static AnimationClip FindBestClip(string fbxPath, string[] preferredExact, string mustContain, string[] exclude)
         {
             var clips = AssetDatabase.LoadAllAssetsAtPath(fbxPath)
@@ -654,7 +904,7 @@ namespace NullBorn.Editor
             var cam = camGo.GetComponent<Camera>();
             cam.farClipPlane = 200f;
             cam.allowHDR = false;
-            cam.allowMSAA = false;
+            cam.allowMSAA = true;
 
             var follow = camGo.GetComponent<SimpleFollowCamera>() ?? camGo.AddComponent<SimpleFollowCamera>();
             follow.ApplyOverTheShoulderDefaults();
@@ -678,16 +928,15 @@ namespace NullBorn.Editor
 
         static void SetupMapCompanion(GameObject player)
         {
-            Application.targetFrameRate = 60;
+            Application.targetFrameRate = -1;
             QualitySettings.vSyncCount = 0;
 
             var net = new GameObject("MapSync");
             var config = net.AddComponent<NullBornApiConfig>();
             config.Configure(NullBornApiConfig.DefaultBaseUrl, NullBornApiConfig.DefaultZoneId, NullBornApiConfig.DefaultPlayerId);
-            config.SetRates(2f, 1f);
-            // Off by default — avoids Play-mode hitches when API isn't running.
-            // Enable on MapSync when companion API is up (dotnet run).
-            config.SetAutoConnect(false);
+            config.SetRates(14f, 1f);
+            // Probe local API once (http://127.0.0.1:5080). If down, stay offline — no retry hitch.
+            config.SetAutoConnect(true);
             var sync = net.AddComponent<GameSyncClient>();
             var pose = net.AddComponent<PlayerPosePublisher>();
             var visual = player.transform.Find("Visual");
@@ -757,7 +1006,7 @@ namespace NullBorn.Editor
             hintText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             if (hintText.font == null)
                 hintText.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            hintText.text = "M · mapa";
+            hintText.text = "M mapa · R arma · Click/F ataque";
             hintText.alignment = TextAnchor.MiddleCenter;
             hintText.fontSize = 14;
             hintText.color = new Color(0.85f, 0.9f, 0.82f, 0.75f);
@@ -878,7 +1127,7 @@ namespace NullBorn.Editor
             dim.color = new Color(0.02f, 0.04f, 0.03f, 0.82f);
             dim.raycastTarget = true;
 
-            var card = CreateUiPanel(pauseRoot, "PauseCard", Vector2.zero, new Vector2(520f, 460f), TextAnchor.MiddleCenter);
+            var card = CreateUiPanel(pauseRoot, "PauseCard", Vector2.zero, new Vector2(520f, 540f), TextAnchor.MiddleCenter);
             var cardImg = card.gameObject.AddComponent<Image>();
             cardImg.color = new Color(0.09f, 0.12f, 0.1f, 0.98f);
             cardImg.raycastTarget = true;
@@ -970,6 +1219,22 @@ namespace NullBorn.Editor
             resumeText.color = new Color(0.12f, 0.08f, 0.04f);
             resumeText.raycastTarget = false;
 
+            y -= 56f;
+            var quitRt = CreateUiPanel(card, "QuitBtn", new Vector2(0f, y), new Vector2(240f, 44f), TextAnchor.UpperCenter);
+            var quitImg = quitRt.gameObject.AddComponent<Image>();
+            quitImg.color = new Color(0.42f, 0.18f, 0.16f, 1f);
+            var quitBtn = quitRt.gameObject.AddComponent<Button>();
+            quitBtn.targetGraphic = quitImg;
+            var quitLabel = CreateUiPanel(quitRt, "Label", Vector2.zero, new Vector2(220f, 40f), TextAnchor.MiddleCenter);
+            var quitText = quitLabel.gameObject.AddComponent<Text>();
+            quitText.font = font;
+            quitText.text = "Salir";
+            quitText.fontSize = 18;
+            quitText.fontStyle = FontStyle.Bold;
+            quitText.alignment = TextAnchor.MiddleCenter;
+            quitText.color = new Color(1f, 0.86f, 0.82f);
+            quitText.raycastTarget = false;
+
             var pause = pauseCanvasGo.AddComponent<PauseMenuController>();
             pause.Wire(
                 pauseRoot.gameObject,
@@ -982,7 +1247,8 @@ namespace NullBorn.Editor
                 keyBtn,
                 minusBtn,
                 plusBtn,
-                resumeBtn);
+                resumeBtn,
+                quitBtn);
             pauseRoot.gameObject.SetActive(false);
         }
 
@@ -1081,7 +1347,7 @@ namespace NullBorn.Editor
             if (go == null) return null;
 
             StripColliders(go);
-            UpgradeMaterialsToUrp(go);
+            Cap0ArtSetup.ApplyEnvironmentMaterials(go);
             go.isStatic = true;
             GameObjectUtility.SetStaticEditorFlags(go, StaticEditorFlags.BatchingStatic);
 
@@ -1097,7 +1363,7 @@ namespace NullBorn.Editor
             return go;
         }
 
-        static GameObject SpawnFbx(Transform parent, string assetPath, Vector3 localPos, Quaternion localRot, Vector3? localScale = null)
+        static GameObject SpawnFbx(Transform parent, string assetPath, Vector3 localPos, Quaternion localRot, Vector3? localScale = null, bool unpack = true)
         {
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
             if (prefab == null)
@@ -1107,6 +1373,8 @@ namespace NullBorn.Editor
             }
 
             var go = (GameObject)PrefabUtility.InstantiatePrefab(prefab, parent);
+            if (unpack && PrefabUtility.IsPartOfPrefabInstance(go))
+                PrefabUtility.UnpackPrefabInstance(go, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
             go.transform.localPosition = localPos;
             go.transform.localRotation = localRot;
             if (localScale.HasValue)

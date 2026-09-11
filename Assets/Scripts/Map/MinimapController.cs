@@ -21,8 +21,6 @@ namespace NullBorn.Game.Map
         Sprite pinSprite;
         Texture2D fallbackTex;
         bool loadingMap;
-        Vector2 lastIconPos;
-        float lastIconYaw = float.NaN;
 
         public void SetPinSprite(Sprite sprite) => pinSprite = sprite;
 
@@ -56,29 +54,12 @@ namespace NullBorn.Game.Map
                 Destroy(fallbackTex);
         }
 
-        int frameGate;
-
         void LateUpdate()
         {
             if (zone == null || playerIcon == null || playerTransform == null) return;
 
-            // 20 Hz UI updates — enough for the icon, far cheaper under A/D spam.
-            frameGate++;
-            if ((frameGate & 2) != 0) return;
-
-            var pos = WorldToMinimap(playerTransform.position.x, playerTransform.position.z);
-            if ((pos - lastIconPos).sqrMagnitude > 0.25f)
-            {
-                playerIcon.anchoredPosition = pos;
-                lastIconPos = pos;
-            }
-
-            var yaw = playerTransform.eulerAngles.y;
-            if (float.IsNaN(lastIconYaw) || Mathf.Abs(Mathf.DeltaAngle(lastIconYaw, yaw)) > 2f)
-            {
-                playerIcon.localRotation = Quaternion.Euler(0f, 0f, -yaw);
-                lastIconYaw = yaw;
-            }
+            playerIcon.anchoredPosition = WorldToMinimap(playerTransform.position.x, playerTransform.position.z);
+            playerIcon.localRotation = Quaternion.Euler(0f, 0f, -playerTransform.eulerAngles.y);
         }
 
         void OnZone(ZoneDto z)
@@ -212,8 +193,6 @@ namespace NullBorn.Game.Map
             playerIcon = playerIconRt;
             markersRoot = markers;
             playerTransform = player;
-            lastIconPos = Vector2.zero;
-            lastIconYaw = float.NaN;
 
             if (mapImage != null)
                 ApplyFallbackTexture();

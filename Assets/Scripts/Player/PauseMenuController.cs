@@ -22,6 +22,7 @@ namespace NullBorn.Game
         [SerializeField] Button minusButton;
         [SerializeField] Button plusButton;
         [SerializeField] Button resumeButton;
+        [SerializeField] Button quitButton;
 
         public static bool IsPaused { get; private set; }
 
@@ -43,7 +44,8 @@ namespace NullBorn.Game
             Button keyboardBtn,
             Button minusBtn,
             Button plusBtn,
-            Button resumeBtn)
+            Button resumeBtn,
+            Button quitBtn = null)
         {
             panelRoot = panel;
             sensitivitySlider = sensSlider;
@@ -56,6 +58,7 @@ namespace NullBorn.Game
             minusButton = minusBtn;
             plusButton = plusBtn;
             resumeButton = resumeBtn;
+            quitButton = quitBtn;
             BindListeners();
             SetPaused(false);
             RefreshAll();
@@ -144,6 +147,8 @@ namespace NullBorn.Game
             minusButton ??= FindButton(root, "PauseCard/SensRow/Minus");
             plusButton ??= FindButton(root, "PauseCard/SensRow/Plus");
             resumeButton ??= FindButton(root, "PauseCard/ResumeBtn");
+            quitButton ??= FindButton(root, "PauseCard/QuitBtn");
+            EnsureQuitButton();
 
             if (withMouseHighlight == null && withMouseButton != null)
                 withMouseHighlight = withMouseButton.targetGraphic as Image;
@@ -157,28 +162,75 @@ namespace NullBorn.Game
             return t != null ? t.GetComponent<Button>() : null;
         }
 
+        void EnsureQuitButton()
+        {
+            if (quitButton != null || panelRoot == null) return;
+            var card = panelRoot.transform.Find("PauseCard");
+            if (card == null) return;
+
+            var resume = card.Find("ResumeBtn") as RectTransform;
+            var go = new GameObject("QuitBtn", typeof(RectTransform), typeof(Image), typeof(Button));
+            go.transform.SetParent(card, false);
+            var rt = go.GetComponent<RectTransform>();
+            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 1f);
+            rt.pivot = new Vector2(0.5f, 1f);
+            rt.sizeDelta = new Vector2(240f, 44f);
+            if (resume != null)
+                rt.anchoredPosition = resume.anchoredPosition + new Vector2(0f, -56f);
+            else
+                rt.anchoredPosition = new Vector2(0f, -400f);
+
+            var img = go.GetComponent<Image>();
+            img.color = new Color(0.42f, 0.18f, 0.16f, 1f);
+            quitButton = go.GetComponent<Button>();
+            quitButton.targetGraphic = img;
+
+            var labelGo = new GameObject("Label", typeof(RectTransform), typeof(Text));
+            labelGo.transform.SetParent(rt, false);
+            var labelRt = labelGo.GetComponent<RectTransform>();
+            labelRt.anchorMin = Vector2.zero;
+            labelRt.anchorMax = Vector2.one;
+            labelRt.offsetMin = Vector2.zero;
+            labelRt.offsetMax = Vector2.zero;
+            var text = labelGo.GetComponent<Text>();
+            var sample = card.GetComponentInChildren<Text>();
+            text.font = sample != null ? sample.font : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.text = "Salir";
+            text.fontSize = 18;
+            text.fontStyle = FontStyle.Bold;
+            text.alignment = TextAnchor.MiddleCenter;
+            text.color = new Color(1f, 0.86f, 0.82f);
+            text.raycastTarget = false;
+
+            var cardRt = card as RectTransform;
+            if (cardRt != null && cardRt.sizeDelta.y < 530f)
+                cardRt.sizeDelta = new Vector2(cardRt.sizeDelta.x, 540f);
+        }
+
         void BindListeners()
         {
-            if (listenersBound) return;
-
-            if (sensitivitySlider != null)
+            if (!listenersBound)
             {
-                sensitivitySlider.minValue = 0.1f;
-                sensitivitySlider.maxValue = 2f;
-                sensitivitySlider.wholeNumbers = false;
-                sensitivitySlider.onValueChanged.RemoveAllListeners();
-                sensitivitySlider.onValueChanged.AddListener(OnSensitivityChanged);
+                if (sensitivitySlider != null)
+                {
+                    sensitivitySlider.minValue = 0.1f;
+                    sensitivitySlider.maxValue = 2f;
+                    sensitivitySlider.wholeNumbers = false;
+                    sensitivitySlider.onValueChanged.RemoveAllListeners();
+                    sensitivitySlider.onValueChanged.AddListener(OnSensitivityChanged);
+                }
+
+                BindClick(minusButton, () => NudgeSensitivity(-0.1f));
+                BindClick(plusButton, () => NudgeSensitivity(0.1f));
+                BindClick(withMouseButton, () => SetScheme(ControlScheme.WithMouse));
+                BindClick(keyboardButton, () => SetScheme(ControlScheme.KeyboardOnly));
+                BindClick(resumeButton, Resume);
+
+                listenersBound = resumeButton != null && sensitivitySlider != null
+                                 && withMouseButton != null && keyboardButton != null;
             }
 
-            BindClick(minusButton, () => NudgeSensitivity(-0.1f));
-            BindClick(plusButton, () => NudgeSensitivity(0.1f));
-            BindClick(withMouseButton, () => SetScheme(ControlScheme.WithMouse));
-            BindClick(keyboardButton, () => SetScheme(ControlScheme.KeyboardOnly));
-            BindClick(resumeButton, Resume);
-
-            // Mark bound only when the critical controls exist.
-            listenersBound = resumeButton != null && sensitivitySlider != null
-                            && withMouseButton != null && keyboardButton != null;
+            BindClick(quitButton, QuitGame);
         }
 
         static void BindClick(Button button, UnityEngine.Events.UnityAction action)
@@ -209,11 +261,21 @@ namespace NullBorn.Game
             {
                 GameSettings.Save();
                 if (followCamera != null)
-                    followCamera.SetCursorLocked(GameSettings.UsesMouse && wasCursorLocked);
+                    followCamera.SetCursorLocked(GameSettings.UsesMouse);
             }
         }
 
         public void Resume() => SetPaused(false);
+
+        public void QuitGame()
+        {
+            GameSettings.Save();
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
+        }
 
         public void NudgeSensitivity(float delta)
         {
@@ -226,6 +288,7 @@ namespace NullBorn.Game
         {
             GameSettings.Scheme = scheme;
             RefreshSchemeUi();
+            wasCursorLocked = GameSettings.UsesMouse;
             if (followCamera != null && !IsPaused)
                 followCamera.SetCursorLocked(GameSettings.UsesMouse);
         }

@@ -11,7 +11,6 @@ namespace NullBorn.Game
     {
         [SerializeField] bool visible = true;
         [SerializeField] float sampleInterval = 1f;
-        [SerializeField] int targetFps = 60;
 
         float sampleTimer;
         int frames;
@@ -32,8 +31,6 @@ namespace NullBorn.Game
 
         void Awake()
         {
-            Application.targetFrameRate = targetFps;
-            QualitySettings.vSyncCount = 0;
             if (GetComponent<RuntimePerformanceTweaks>() == null)
                 gameObject.AddComponent<RuntimePerformanceTweaks>();
             EnsureUi();
@@ -98,7 +95,7 @@ namespace NullBorn.Game
             fpsText = CreateLabel(bgGo.transform, "Fps", new Vector2(8f, -4f), new Vector2(284f, 28f), 14, FontStyle.Bold);
             hintText = CreateLabel(bgGo.transform, "Hint", new Vector2(8f, -30f), new Vector2(284f, 22f), 11, FontStyle.Normal);
             hintText.color = Hint;
-            hintText.text = "F3 · cap 60 · M mapa";
+            hintText.text = "F3 · FPS · M mapa";
         }
 
         static Text CreateLabel(Transform parent, string name, Vector2 pos, Vector2 size, int fontSize, FontStyle style)

@@ -24,6 +24,7 @@ namespace NullBorn.Editor
             }
 
             Directory.CreateDirectory(Path.GetDirectoryName(OutputPath));
+            ApplyPlayerIdentity.Apply();
 
             var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
             {

@@ -1,34 +1,48 @@
 using System.Collections.Generic;
+using NullBorn.Game.Art;
 using NullBorn.Game.Net;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace NullBorn.Game.Map
 {
+    /// <summary>
+    /// Tall colored beacons on the ground so phone waypoints are obvious in 3D,
+    /// not only on the minimap / compass.
+    /// </summary>
     public class WorldMarkerView : MonoBehaviour
     {
         [SerializeField] GameSyncClient sync;
-        [SerializeField] float markerHeight = 2.4f;
-        [SerializeField] float beamRadius = 0.18f;
+        [SerializeField] float beamHeight = 7.5f;
+        [SerializeField] float beamRadius = 0.28f;
 
         readonly Dictionary<string, GameObject> spawned = new();
-        readonly Dictionary<string, MeshRenderer> renderers = new();
-        readonly Dictionary<string, Color> lastColors = new();
-        static Material sharedUnlit;
-        MaterialPropertyBlock propBlock;
+        readonly Dictionary<string, MeshRenderer[]> renderers = new();
+        readonly Dictionary<string, TextMesh> labels = new();
+        static Shader markerShader;
 
         void Awake()
         {
             if (sync == null)
                 sync = GetComponent<GameSyncClient>() ?? FindAnyObjectByType<GameSyncClient>();
-            propBlock = new MaterialPropertyBlock();
-            EnsureSharedMaterial();
+            EnsureShader();
+        }
+
+        void Start()
+        {
+            if (sync != null && sync.LatestMarkers != null && sync.LatestMarkers.Length > 0)
+                OnMarkers(sync.LatestMarkers);
         }
 
         void OnEnable()
         {
-            if (sync != null)
-                sync.MarkersUpdated += OnMarkers;
+            if (sync == null)
+                sync = GetComponent<GameSyncClient>() ?? FindAnyObjectByType<GameSyncClient>();
+            if (sync == null) return;
+            sync.MarkersUpdated -= OnMarkers;
+            sync.MarkersUpdated += OnMarkers;
+            if (sync.LatestMarkers != null && sync.LatestMarkers.Length > 0)
+                OnMarkers(sync.LatestMarkers);
         }
 
         void OnDisable()
@@ -39,21 +53,23 @@ namespace NullBorn.Game.Map
 
         void OnMarkers(MarkerDto[] markers)
         {
+            if (markers == null) return;
+
             var seen = new HashSet<string>();
             foreach (var m in markers)
             {
+                if (m == null || string.IsNullOrEmpty(m.id)) continue;
                 seen.Add(m.id);
                 if (!spawned.TryGetValue(m.id, out var go) || go == null)
                 {
-                    go = CreateMarkerVisual(m);
+                    go = CreateBeacon(m);
                     spawned[m.id] = go;
                 }
 
-                go.transform.position = new Vector3(m.x, 0.02f, m.z);
+                PlaceOnGround(go.transform, m.x, m.z);
                 ApplyColor(m);
-                go.transform.localScale = m.isActive
-                    ? new Vector3(1.25f, markerHeight * 1.15f, 1.25f)
-                    : new Vector3(1f, markerHeight, 1f);
+                if (labels.TryGetValue(m.id, out var label) && label != null)
+                    label.text = string.IsNullOrWhiteSpace(m.label) ? "Pin" : m.label;
             }
 
             var stale = new List<string>();
@@ -69,73 +85,138 @@ namespace NullBorn.Game.Map
                     Destroy(go);
                 spawned.Remove(id);
                 renderers.Remove(id);
-                lastColors.Remove(id);
+                labels.Remove(id);
             }
         }
 
-        GameObject CreateMarkerVisual(MarkerDto m)
+        void PlaceOnGround(Transform t, float x, float z)
         {
-            var root = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            root.name = "MapMarker_" + m.label;
-            root.transform.SetParent(transform, true);
-            Object.Destroy(root.GetComponent<Collider>());
-            root.transform.localScale = new Vector3(beamRadius * 2f, markerHeight * 0.5f, beamRadius * 2f);
+            var y = 0.04f;
+            var origin = new Vector3(x, 80f, z);
+            if (Physics.Raycast(origin, Vector3.down, out var hit, 160f))
+                y = hit.point.y + 0.04f;
+            t.position = new Vector3(x, y, z);
+        }
 
-            var renderer = root.GetComponent<MeshRenderer>();
-            if (renderer != null)
+        GameObject CreateBeacon(MarkerDto m)
+        {
+            var root = new GameObject("MapMarker_" + (m.label ?? "Pin"));
+            root.transform.SetParent(transform, true);
+
+            var beam = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            beam.name = "Beam";
+            beam.transform.SetParent(root.transform, false);
+            Object.Destroy(beam.GetComponent<Collider>());
+            beam.transform.localScale = new Vector3(beamRadius * 2f, beamHeight * 0.5f, beamRadius * 2f);
+            beam.transform.localPosition = new Vector3(0f, beamHeight * 0.5f, 0f);
+
+            var cap = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            cap.name = "Cap";
+            cap.transform.SetParent(root.transform, false);
+            Object.Destroy(cap.GetComponent<Collider>());
+            cap.transform.localScale = Vector3.one * 0.85f;
+            cap.transform.localPosition = new Vector3(0f, beamHeight + 0.15f, 0f);
+
+            var pad = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            pad.name = "Pad";
+            pad.transform.SetParent(root.transform, false);
+            Object.Destroy(pad.GetComponent<Collider>());
+            pad.transform.localScale = new Vector3(1.6f, 0.06f, 1.6f);
+            pad.transform.localPosition = new Vector3(0f, 0.06f, 0f);
+
+            var labelGo = new GameObject("Label");
+            labelGo.transform.SetParent(root.transform, false);
+            labelGo.transform.localPosition = new Vector3(0f, beamHeight + 1.05f, 0f);
+            var tm = labelGo.AddComponent<TextMesh>();
+            tm.text = string.IsNullOrWhiteSpace(m.label) ? "Pin" : m.label;
+            tm.anchor = TextAnchor.MiddleCenter;
+            tm.alignment = TextAlignment.Center;
+            tm.fontSize = 48;
+            tm.characterSize = 0.12f;
+            tm.color = Color.white;
+            labels[m.id] = tm;
+            labelGo.AddComponent<BillboardToCamera>();
+
+            var list = new List<MeshRenderer>();
+            foreach (var r in root.GetComponentsInChildren<MeshRenderer>())
             {
-                EnsureSharedMaterial();
-                renderer.sharedMaterial = sharedUnlit;
-                renderer.shadowCastingMode = ShadowCastingMode.Off;
-                renderer.receiveShadows = false;
-                renderer.lightProbeUsage = LightProbeUsage.Off;
-                renderer.reflectionProbeUsage = ReflectionProbeUsage.Off;
-                renderers[m.id] = renderer;
+                r.shadowCastingMode = ShadowCastingMode.Off;
+                r.receiveShadows = false;
+                r.lightProbeUsage = LightProbeUsage.Off;
+                r.reflectionProbeUsage = ReflectionProbeUsage.Off;
+                r.material = NewMarkerMaterial();
+                list.Add(r);
             }
 
-            ApplyColor(m);
+            renderers[m.id] = list.ToArray();
+            InteractableHighlight.Apply(root);
             return root;
         }
 
         void ApplyColor(MarkerDto m)
         {
-            if (!renderers.TryGetValue(m.id, out var renderer) || renderer == null) return;
-
+            if (!renderers.TryGetValue(m.id, out var rs) || rs == null) return;
             if (!ColorUtility.TryParseHtmlString(m.color, out var color))
-                color = new Color(0.91f, 0.36f, 0.02f);
+                color = new Color(0.91f, 0.36f, 0.02f, 1f);
+            color.a = 1f;
             if (m.isActive)
-                color = Color.Lerp(color, Color.white, 0.35f);
+                color = Color.Lerp(color, Color.white, 0.28f);
 
-            if (lastColors.TryGetValue(m.id, out var prev) && ColorsAlmostEqual(prev, color))
-                return;
+            foreach (var r in rs)
+            {
+                if (r == null) continue;
+                var mats = r.materials;
+                for (var i = 0; i < mats.Length; i++)
+                {
+                    var mat = mats[i];
+                    if (mat == null) continue;
+                    if (mat.shader != null && mat.shader.name == InteractableHighlight.ShaderName)
+                        continue;
+                    SetColor(mat, color);
+                }
+            }
 
-            lastColors[m.id] = color;
-            if (propBlock == null)
-                propBlock = new MaterialPropertyBlock();
-            renderer.GetPropertyBlock(propBlock);
-            if (sharedUnlit != null && sharedUnlit.HasProperty("_BaseColor"))
-                propBlock.SetColor("_BaseColor", color);
-            else
-                propBlock.SetColor("_Color", color);
-            renderer.SetPropertyBlock(propBlock);
+            if (labels.TryGetValue(m.id, out var label) && label != null)
+                label.color = color;
         }
 
-        static bool ColorsAlmostEqual(Color a, Color b)
+        static void SetColor(Material mat, Color color)
         {
-            return Mathf.Abs(a.r - b.r) < 0.01f
-                   && Mathf.Abs(a.g - b.g) < 0.01f
-                   && Mathf.Abs(a.b - b.b) < 0.01f
-                   && Mathf.Abs(a.a - b.a) < 0.01f;
+            if (mat == null) return;
+            if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", color);
+            if (mat.HasProperty("_Color")) mat.SetColor("_Color", color);
+            if (mat.HasProperty("_UnlitColor")) mat.SetColor("_UnlitColor", color);
+            if (mat.HasProperty("_EmissionColor"))
+            {
+                mat.EnableKeyword("_EMISSION");
+                mat.SetColor("_EmissionColor", color * 1.6f);
+            }
         }
 
-        static void EnsureSharedMaterial()
+        static Material NewMarkerMaterial()
         {
-            if (sharedUnlit != null) return;
-            var shader = Shader.Find("Universal Render Pipeline/Unlit")
-                         ?? Shader.Find("Unlit/Color")
-                         ?? Shader.Find("Standard");
-            sharedUnlit = new Material(shader);
-            sharedUnlit.enableInstancing = true;
+            EnsureShader();
+            var mat = new Material(markerShader);
+            return mat;
+        }
+
+        static void EnsureShader()
+        {
+            if (markerShader != null) return;
+            markerShader = Shader.Find("Universal Render Pipeline/Unlit")
+                           ?? Shader.Find("Unlit/Color")
+                           ?? Shader.Find("Sprites/Default")
+                           ?? Shader.Find("Standard");
+        }
+
+        class BillboardToCamera : MonoBehaviour
+        {
+            void LateUpdate()
+            {
+                var cam = Camera.main;
+                if (cam == null) return;
+                transform.rotation = Quaternion.LookRotation(transform.position - cam.transform.position);
+            }
         }
     }
 }

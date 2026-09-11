@@ -123,7 +123,16 @@ namespace NullBorn.Game
 
             var usesMouse = GameSettings.UsesMouse;
             if (usesMouse)
+            {
+                if (!cursorLocked)
+                {
+                    var mouse = Mouse.current;
+                    if (mouse != null && mouse.leftButton.wasPressedThisFrame)
+                        SetCursorLocked(true);
+                }
+
                 ReadMouseAim();
+            }
 
             if (!initialized)
             {

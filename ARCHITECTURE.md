@@ -8,7 +8,9 @@ NullBorn/
 │   ├── Scripts/
 │   │   ├── Player/         # Motor, cámara, pausa, settings, FPS
 │   │   ├── Map/            # Minimapa, brújula, HUD, marcadores
-│   │   └── Net/            # Cliente API / SignalR / DTOs
+│   │   ├── Net/            # Cliente API / SignalR / DTOs
+│   │   ├── Combat/         # Melee, arma, dummy
+│   │   └── Art/            # Highlight de interactuables
 │   ├── Art/                # Arte propio / animaciones del proyecto
 │   ├── Scenes/             # Escenas jugables (p. ej. ArtTest)
 │   ├── Settings/           # URP / calidad
@@ -17,12 +19,14 @@ NullBorn/
 ├── Packages/               # manifest UPM
 ├── ProjectSettings/        # Proyecto Unity
 ├── Server/                 # ASP.NET + PostgreSQL + PWA
-├── docs/                   # Documentación (archivo de prototipo en docs/archive/)
+├── docs/                   # Dirección de arte Cap 0 + marca
 ├── tools/                  # Scripts auxiliares (Python, etc.)
 ├── _Inbox/                 # Local: zips/packs crudos (gitignored)
 ├── ARCHITECTURE.md
 ├── ASSET_STACK.md
 ├── PERFORMANCE.md
+├── DEPLOY.md
+├── CHANGELOG.md
 └── README.md
 ```
 
@@ -57,7 +61,7 @@ Nuevas features van en carpetas por dominio bajo `Assets/Scripts/`:
 | `Player/` | Control del avatar |
 | `Map/` | Sistemas de mapa en juego |
 | `Net/` | Cliente de red |
-| `Combat/` | (futuro) combate |
+| `Combat/` | Melee, arma, dummy de ArtTest |
 | `UI/` | (futuro) menús / HUD no-mapa |
 | `Core/` | (futuro) utilidades compartidas |
 
@@ -66,5 +70,5 @@ No mezclar lógica de red dentro de `Player/` ni arte de terceros fuera de `_Thi
 ## Qué ya no forma parte del repo
 
 - **`Game/`** — absorbido en la raíz.
-- **`Prototipo/`** — eliminado; referencias históricas en `docs/archive/`.
+- **`Prototipo/`** — eliminado en el unificado de septiembre 2026.
 - Packs sueltos en la antigua raíz `Assets/` — movidos a `_Inbox/SourcePacks/` (local).

@@ -38,7 +38,8 @@
   let busy = false;
   let lastTouchAt = 0;
   let rafId = 0;
-  let lastDraw = 0;
+  let posePollId = 0;
+  let hubLive = false;
 
   function setStatus(text, state) {
     statusEl.textContent = text;
@@ -97,7 +98,7 @@
     canvas.height = Math.floor(rect.height * dpr);
     canvas.style.width = `${rect.width}px`;
     canvas.style.height = `${rect.height}px`;
-    scheduleDraw(true);
+    scheduleDraw();
   }
 
   function lerp(a, b, t) {
@@ -110,7 +111,7 @@
   }
 
   function tickDisplay(dt) {
-    const t = 1 - Math.exp(-12 * dt);
+    const t = 1 - Math.exp(-16 * dt);
     display.x = lerp(display.x, player.x, t);
     display.z = lerp(display.z, player.z, t);
     display.yaw = lerpAngle(display.yaw, player.yaw, t);
@@ -188,10 +189,7 @@
     updatePoseReadout();
   }
 
-  function scheduleDraw(force) {
-    const now = performance.now();
-    if (!force && now - lastDraw < 32) return;
-    lastDraw = now;
+  function scheduleDraw() {
     draw();
   }
 
@@ -200,7 +198,7 @@
     const dt = Math.min(0.05, (ts - loop._last) / 1000);
     loop._last = ts;
     tickDisplay(dt);
-    scheduleDraw(false);
+    draw();
     rafId = requestAnimationFrame(loop);
   }
 
@@ -298,7 +296,7 @@
   async function loadMarkers() {
     markers = await api(`/api/markers?zoneId=${encodeURIComponent(ZONE_ID)}`);
     renderList();
-    scheduleDraw(true);
+    scheduleDraw();
   }
 
   function applyPlayerPose(p) {
@@ -307,13 +305,24 @@
     player = { x: n.x, z: n.z, yaw: n.yaw };
   }
 
-  async function loadPlayer() {
+  async function loadPlayer(opts) {
     try {
       const p = await api(`/api/player/${PLAYER_ID}`);
       applyPlayerPose(p);
-      display = { ...player };
-      scheduleDraw(true);
-    } catch (_) { /* first boot ok */ }
+      if (opts && opts.snap) display = { ...player };
+      scheduleDraw();
+    } catch (_) { /* first boot / offline ok */ }
+  }
+
+  function startPoseFallbackPoll() {
+    if (hubLive || posePollId) return;
+    posePollId = setInterval(() => { loadPlayer().catch(() => {}); }, 2000);
+  }
+
+  function stopPoseFallbackPoll() {
+    if (!posePollId) return;
+    clearInterval(posePollId);
+    posePollId = 0;
   }
 
   async function createMarker(x, z) {
@@ -332,7 +341,7 @@
       if (created && !markers.some((m) => m.id === created.id)) {
         markers = [...markers, created];
         renderList();
-        scheduleDraw(true);
+        scheduleDraw();
       } else {
         await loadMarkers();
       }
@@ -362,7 +371,7 @@
       await api(`/api/markers/${id}`, { method: "DELETE" });
       markers = markers.filter((m) => m.id !== id);
       renderList();
-      scheduleDraw(true);
+      scheduleDraw();
     } finally {
       busy = false;
     }
@@ -509,21 +518,34 @@
       if (Array.isArray(payload)) {
         markers = payload;
         renderList();
-        scheduleDraw(true);
+        scheduleDraw();
       } else {
         await loadMarkers();
       }
     });
 
-    connection.onreconnecting(() => setStatus("Reconectando…", "pending"));
-    connection.onreconnected(() => setStatus("En vivo", "ok"));
+    connection.onreconnecting(() => {
+      hubLive = false;
+      setStatus("Reconectando…", "pending");
+      startPoseFallbackPoll();
+    });
+    connection.onreconnected(async () => {
+      hubLive = true;
+      stopPoseFallbackPoll();
+      try { await connection.invoke("JoinZone", ZONE_ID); } catch (_) { /* ignore */ }
+      setStatus("En vivo", "ok");
+    });
+    connection.onclose(() => {
+      hubLive = false;
+      setStatus("Sin live", "pending");
+      startPoseFallbackPoll();
+    });
 
     await connection.start();
     await connection.invoke("JoinZone", ZONE_ID);
+    hubLive = true;
+    stopPoseFallbackPoll();
     setStatus("En vivo", "ok");
-
-    // Fallback poll if SignalR payloads arrive with unexpected shape
-    setInterval(() => { loadPlayer().catch(() => {}); }, 2000);
   }
 
   async function boot() {
@@ -531,7 +553,7 @@
       setStatus("Conectando…", "pending");
       await loadZone();
       await loadMarkers();
-      await loadPlayer();
+      await loadPlayer({ snap: true });
       resizeCanvas();
       bindMapInput();
       window.addEventListener("resize", resizeCanvas);
@@ -540,6 +562,7 @@
     } catch (err) {
       console.error(err);
       setStatus("Sin conexión", "err");
+      startPoseFallbackPoll();
     }
   }
 

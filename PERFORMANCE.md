@@ -49,7 +49,7 @@ Meta de tesis (PC Windows, Unity 6 + URP): **≥55 FPS estables** en escenas jug
 3. Unificar materiales repetidos (menos variantes = más batching).
 4. Animators de NPCs lejanos con culling / update rate bajo.
 5. Pool de VFX; cero `Instantiate`/`Destroy` en combate por frame.
-6. Build player: VSync On o `targetFrameRate = 60` para entrega estable.
+6. Build player: default **uncapped** (`targetFrameRate = -1`, VSync off) so F3 / el player miden FPS real. Cap opcional: `RuntimePerformanceTweaks.frameCap` = 60 o 120, o marcar `vsync`.
 
 ## Menús Unity
 

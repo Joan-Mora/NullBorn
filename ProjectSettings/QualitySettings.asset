@@ -277,8 +277,8 @@ QualitySettings:
     shadows: 2
     shadowResolution: 1
     shadowProjection: 1
-    shadowCascades: 1
-    shadowDistance: 22
+    shadowCascades: 2
+    shadowDistance: 40
     shadowNearPlaneOffset: 3
     shadowCascade2Split: 0.2
     shadowCascade4Split: {x: 0.06666667, y: 0.2, z: 0.46666667}
@@ -287,7 +287,7 @@ QualitySettings:
     globalTextureMipmapLimit: 0
     textureMipmapLimitSettings: []
     anisotropicTextures: 1
-    antiAliasing: 0
+    antiAliasing: 2
     softParticles: 0
     softVegetation: 1
     realtimeReflectionProbes: 0
