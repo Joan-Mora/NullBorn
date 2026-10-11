@@ -16,6 +16,19 @@ Packs Unity-ready bajo `Assets/_ThirdParty/`. Inbox local de descargas: `_Inbox/
 | `UI/` | UIBundleFree (revisar: extracto actual parece solo previews) |
 | `VFX/` | Fire / Zap `.unitypackage` + Highlight Shader |
 
+## Licencias y packs que no se versionan
+
+| Carpeta | Licencia | En el repositorio |
+|---------|----------|-------------------|
+| `Nature/`, `Village/`, `Characters/`, `Animals/` | CC0 1.0 (Quaternius) | Sí |
+| `Water/` | MIT (TinyPlay) | Sí |
+| `Stylized3DMonster/` | Unity Asset Store EULA | No |
+| `VFX/` | Licencias de Vefects y del autor del Highlight Shader | No |
+| `Armory/` | Licencia del autor del pack | No |
+| `UI/` | Licencia del autor del pack | No |
+
+Las cuatro carpetas marcadas con "No" están en `.gitignore` porque sus licencias no permiten redistribuirlas en un repositorio público. Para trabajar con el proyecto completo, descárgalas con tu propia cuenta (Unity Asset Store → My Assets, o la página de cada autor) y cópialas en `Assets/_ThirdParty/` con el mismo nombre de carpeta. Sin ellas el proyecto abre, pero faltan los monstruos, los efectos y parte de las armas.
+
 ## Tras abrir Unity
 
 1. Espera a que importe todo (barra inferior).

@@ -63,3 +63,13 @@ Thumbs.db
 
 # Large unitypackages already imported
 Assets/_ThirdParty/VFX/*.unitypackage
+
+# Packs whose licenses forbid redistribution: import them locally (see Assets/_ThirdParty/README.md)
+Assets/_ThirdParty/Stylized3DMonster/
+Assets/_ThirdParty/Stylized3DMonster.meta
+Assets/_ThirdParty/VFX/
+Assets/_ThirdParty/VFX.meta
+Assets/_ThirdParty/Armory/
+Assets/_ThirdParty/Armory.meta
+Assets/_ThirdParty/UI/
+Assets/_ThirdParty/UI.meta
